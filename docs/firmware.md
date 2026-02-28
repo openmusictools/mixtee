@@ -86,7 +86,7 @@ The PJRC Audio Library runs on a timer interrupt and preempts all other code. Th
 
 ### Noise Mitigation (Firmware)
 
-- **Cap NeoPixel global brightness** (10-20% default reduces noise and power)
+- **Cap NeoPixel global brightness** (30% default recommended — reduces noise and power; hardware is sized for uncapped operation)
 - **Smooth parameter changes** (no abrupt steps in gain/pan — use ramping over 1-2 audio blocks)
 - **USB host power management** (ability to power-cycle ports via software)
 - **Pop suppression sequencing:** On boot, hold output mute relay/switch closed until DSP is initialized and stable (~500 ms), then ramp up. On shutdown (voltage drop detected), ramp down and mute before power loss.

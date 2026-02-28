@@ -13,20 +13,21 @@
 - **Nav Encoder (left):** Navigate laterally within current depth; push = drill down one level
 - **Edit Encoder (right):** Adjust default parameter of focused element; push = drill into focused element
 
-**12× Mechanical Key Switches (custom PCB, CHOC hotswap):**
+**16× Mechanical Key Switches (custom PCB, CHOC hotswap, 4×4 grid):**
 
-- Layout: 3×4 grid below display (all 12 keys in one block)
+- Layout: 4×4 grid below display (all 16 keys in one block)
 - Button mapping:
-  - Row 1 (channel controls): Mute, Solo, Rec, (spare)
-  - Row 2: (spare), (spare), (spare), (spare)
-  - Row 3 (navigation): Home, Back, Page, Shift
+  - Row 1 (channel controls): Mute, Solo, Rec, (assignable)
+  - Row 2: (assignable), (assignable), (assignable), (assignable)
+  - Row 3: (assignable), (assignable), (assignable), (assignable)
+  - Row 4 (navigation): Home, Back, Shift, (assignable)
 - **Mute/Solo/Rec:** Depth-independent — always act on the currently selected channel regardless of navigation depth
 - **Home:** Hard reset to Overview (clears navigation stack, returns to top-level overview)
 - **Back:** Navigate up one level in the hierarchy
 - **Page:** Hold Page + turn Nav encoder to scroll vertically between pages within a view
 - **Shift:** Modifier key (hold + other key for alternate functions)
 - Custom PCB per key group with Kailh CHOC hotswap sockets, WS2812B-2020 NeoPixels (daisy-chained, single data pin), 100nF decoupling cap per LED
-- 12 switches on direct GPIO (no scan matrix needed)
+- 16 switches scanned via MCP23017 I2C GPIO expander (4×4 matrix with anti-ghosting diodes, on Key PCB)
 
 ### Display
 
@@ -104,7 +105,7 @@ When navigating laterally past the last channel in a view, the Nav encoder cross
 
 ### Power
 
-- Soft power button (momentary) on top panel controls TPS22918 load switch
+- Soft power button (momentary) on top panel controls TPS22965 load switch
 - Power-on: press → load switch latches → Teensy boots → last saved state restored from SD
 - Power-off: press → firmware flushes state to SD → confirms write complete → load switch releases
 

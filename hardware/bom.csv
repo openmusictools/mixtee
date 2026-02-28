@@ -4,30 +4,44 @@ Core Processing,PSRAM 8 MB (QSPI),1,QSPI BGA,APS6404L / IPS6404LSQ,4.00,4.00,Sol
 Core Processing,AK4619VN,4,QFN-36,,20.00-30.00,80.00-120.00,4-in/4-out audio codec; U1-U2 full (ADC+DAC); U3-U4 ADC only; I2C control; TDM audio
 UI Components,4.3 inch 480x272 TFT w/ RA8875,1,Module,,36.00,36.00,SPI interface; hardware drawing engine; PJRC RA8875_t4 library; 93x56 mm visible
 UI Components,Rotary encoder with push,2,Through-hole,,5.00,10.00,Quadrature; interrupt-capable pins; Nav (left) + Edit (right)
-UI Components,Custom key PCB,1-2,PCB,,5.00-10.00,5.00-10.00,CHOC hotswap sockets + WS2812B-2020 + 100nF caps; 2x4 grid + 1x4 row
-UI Components,Kailh CHOC hotswap sockets,12,SMD,,0.30,3.60,Soldered to custom key PCB
-UI Components,WS2812B-2020 NeoPixels,12,SMD,,0.25,3.00,Daisy-chained DOUT-DIN; single data pin; per-key RGB LED
-UI Components,100nF ceramic cap (key LEDs),12,0402/0603,,0.02,0.24,Decoupling per WS2812B
-UI Components,CHOC v2 key switches,12,Through-hole,,1.00,12.00,User-supplied or included; hotswap into custom PCB
-Power & Connectivity,Adafruit USB-C Breakout (6050),1,Module,,5.00,5.00,5V sink with 5.1k CC resistors; power only (no data)
-Power & Connectivity,USB 2.0 hub module/PCB,1,Module,,10.00-15.00,10.00-15.00,2+ downstream ports; self-powered; 1 upstream to Teensy USB host
-Power & Connectivity,TPS2051 (or equiv) power switch,2,SOT-23-5,TPS2052 / MIC2026,1.50,3.00,USB host port per-port current limiting (500 mA each)
-Power & Connectivity,USB-A panel-mount socket,2,Panel mount,,2.00,4.00,Host ports for MIDI controllers; left side panel
-Power & Connectivity,3.5mm TRS panel jack,1,Panel mount,,1.50,1.50,MIDI IN (Type A); left side panel
-Power & Connectivity,Momentary push button (panel mount),1,Panel mount,,1.50,1.50,Soft power on/off; triggers TPS22918 load switch latch; left side panel
-Audio I/O & Analog,1/4 inch TS panel jacks,24,Panel mount,,1.25,30.00,16 inputs (back panel) + 8 outputs (top panel)
+UI Components,Custom key PCB,1-2,PCB,,5.00-10.00,5.00-10.00,CHOC hotswap sockets + WS2812B-2020 + MCP23017 + 100nF caps; 4x4 grid
+UI Components,Kailh CHOC hotswap sockets,16,SMD,,0.30,4.80,Soldered to custom key PCB
+UI Components,WS2812B-2020 NeoPixels,16,SMD,,0.25,4.00,Daisy-chained DOUT-DIN; single data pin; per-key RGB LED
+UI Components,100nF ceramic cap (key LEDs),16,0402/0603,,0.02,0.32,Decoupling per WS2812B
+UI Components,MCP23017 I2C GPIO expander,1,SOIC-28 / DIP-28,,1.50,1.50,4x4 key scan matrix; on Key PCB; address 0x20
+UI Components,CHOC v2 key switches,16,Through-hole,,1.00,16.00,User-supplied or included; hotswap into custom PCB
+Power & Connectivity,TCA9548A I2C mux,1,TSSOP-24,TCA9546A (4-ch),1.50,1.50,I2C bus switch; isolates codec boards; address 0x70
+Power & Connectivity,USB-C receptacle (PCB-mount PWR),1,Mid-mount / through-hole,,1.00,1.00,PWR port; power only (no data); back panel
+Power & Connectivity,STUSB4500 USB PD sink controller,1,QFN-24,,2.00,2.00,Negotiates 5V/5A from PD supplies; fallback 5V/3A via CC resistors; NVM-configurable
+Power & Connectivity,FE1.1s USB 2.0 hub IC,1,SSOP-28,,1.50,1.50,Discrete USB hub; 1 upstream to Teensy USB host; 2 downstream to USB-A
+Power & Connectivity,12 MHz crystal,1,HC49/SMD,,0.50,0.50,FE1.1s clock source; 15 pF load capacitors
+Power & Connectivity,TPS2051 (or equiv) power switch,2,SOT-23-5,TPS2052 / MIC2026,1.50,3.00,USB host port per-port VBUS current limiting (500 mA each)
+Power & Connectivity,USB-A panel-mount socket,2,Panel mount,,2.00,4.00,Host ports for MIDI controllers; top panel
+Power & Connectivity,3.5mm TRS panel jack (MIDI IN),1,Panel mount,,1.50,1.50,MIDI IN Type A (Tip=sink Ring=source Sleeve=shield); top panel
+Power & Connectivity,Momentary push button (panel mount),1,Panel mount,,1.50,1.50,Soft power on/off; triggers soft-latch circuit; top panel
+Power & Connectivity,Full-size SD card socket,1,Panel mount,,2.00-3.00,2.00-3.00,Breakout from Teensy 4.1 SDIO pads; short ribbon harness; top panel
+Audio I/O & Analog,Switchcraft 112A (1/4 inch TS panel jack),24,Panel mount,112BPC (PCB-mount variant),1.25,30.00,16 inputs + 8 outputs; 12.7mm mounting hole; back panel
 Audio I/O & Analog,1/4 inch TRS panel jack,1,Panel mount,,2.00,2.00,Headphone output (stereo); top panel
 Audio I/O & Analog,Potentiometer 10k ohm log,1,Through-hole,,2.00,2.00,Headphone volume; dedicated analog pot; top panel
-Audio I/O & Analog,OPA1678 (dual op-amp),16,SOIC-8,NJM4580 (budget alternate),1.20,19.20,Input buffers (8); anti-alias filters (8); output drivers (4); reconstruction filters (4)
-Audio I/O & Analog,NJM4580 (dual op-amp) [alternate],16,DIP-8 / SOIC-8,,0.80,12.80,Budget-friendly alternate to OPA1678; higher noise floor
+Audio I/O & Analog,OPA1678 (dual op-amp),17,SOIC-8,NJM4580 (budget alternate),1.20,20.40,Input buffers (8); anti-alias (8); output (4); reconstruction (4); virtual ground buffer (1 section)
+Audio I/O & Analog,NJM4580 (dual op-amp) [alternate],17,DIP-8 / SOIC-8,,0.80,13.60,Budget-friendly alternate to OPA1678; higher noise floor
+Audio I/O & Analog,TPA6132A2 headphone amplifier,1,MSOP-8,,2.50,2.50,Ground-referenced stereo HP driver; 25 mW into 32 ohm; 0.01% THD+N
+Audio I/O & Analog,DG419 or TS5A3159 analog switch,4,SOIC-8 / SOT-23-5,,1.00,4.00,Pop suppression; SPST per output stereo pair; GPIO-controlled
+Audio I/O & Analog,6N138 optocoupler,1,DIP-8,,1.00,1.00,MIDI IN galvanic isolation; industry standard at 31.25 kbaud
+Audio I/O & Analog,1N4148 signal diode (MIDI),1,DO-35 / SOD-323,,0.05,0.05,MIDI IN optocoupler LED reverse protection
+Audio I/O & Analog,Resistor 220 ohm (MIDI IN),1,0603/0805,,0.01,0.01,MIDI IN series current limiting resistor
+Audio I/O & Analog,Resistor 470 ohm (MIDI IN pullup),1,0603/0805,,0.01,0.01,6N138 output pull-up to 3.3V
 Power Regulation,ADP7118 LDO,1,SOIC-8,TPS7A47,2.50,2.50,5V to 3.3V_A ultra-low-noise analog rail; <10 uV RMS
-Power Regulation,TPS22918 load switch,1,SOT-23-6,,1.00,1.00,Soft-start / inrush limiting; controlled slew rate
+Power Regulation,TPS22965 load switch,1,SOT-23-6 / WSON-6,,1.50,1.50,Soft-start / inrush limiting; 5A continuous; controlled slew rate
 Power Regulation,10 mohm shunt resistor,1,2512/2010,,0.30,0.30,Current measurement test point on main 5V rail
-Passives & Protection,Electrolytic capacitor 500-1000 uF,2,Through-hole,,0.50,1.00,NeoPixel bulk capacitor + power entry bulk
+Power Regulation,BSS138 N-FET,2,SOT-23,74LVC1G00 NAND (alternate),0.15,0.30,Soft-latch power SR latch (or use single NAND gate instead)
+Power Regulation,Precision resistor 10k 0.1%,2,0603/0805,,0.10,0.20,2.5V virtual ground resistor divider (matched pair)
+Passives & Protection,Electrolytic capacitor 1000-2200 uF,2,Through-hole,,0.75,1.50,NeoPixel bulk capacitor + power entry bulk; sized for uncapped LED brightness
 Passives & Protection,Ceramic capacitor 0.1 uF,60,0402/0603/0805,,0.02,1.20,Local decoupling everywhere (ICs + op-amps + codec AVDD/DVDD)
 Passives & Protection,Ferrite bead,3,0805,,0.15,0.45,5V_DIG to LDO input isolation; belt-and-suspenders with LDO
 Passives & Protection,Resistor 300-500 ohm,1,0805,,0.02,0.02,NeoPixel data line series resistor (reduces ringing)
-Passives & Protection,Polyfuse 1.5A/3A,1,Through-hole/SMD,,0.50,0.50,USB-C VBUS input overcurrent protection
+Passives & Protection,Polyfuse 2.5A/5A,1,Through-hole/SMD,,0.50,0.50,USB-C VBUS input overcurrent protection
+Passives & Protection,1N4148 signal diode (key matrix),16,SOD-323,,0.05,0.80,Anti-ghosting diodes for 4x4 key matrix on Key PCB
 Passives & Protection,Schottky clamp diodes,25,SOD-323/SOT-23,,0.10,2.50,ESD protection on all audio jacks (24 TS + 1 TRS headphone)
 Passives & Protection,Film capacitors 3.3nF,24,0603/0805,,0.05,1.20,Anti-alias + reconstruction Sallen-Key filters
 Passives & Protection,Film capacitors 6.8nF,24,0603/0805,,0.05,1.20,Anti-alias + reconstruction Sallen-Key filters
@@ -35,7 +49,8 @@ Passives & Protection,Resistors 1k ohm,60,0603/0805,,0.01,0.60,Filter networks; 
 Passives & Protection,Resistors misc values,20,0603/0805,,0.01,0.20,Input attenuation dividers; output series (100 ohm); misc
 Passives & Protection,AC coupling caps 10 uF,16,0805/through-hole,,0.10,1.60,Input DC blocking (10 uF + 10k = ~1.6 Hz HPF)
 Passives & Protection,AC coupling caps 47 uF,8,Through-hole,,0.15,1.20,Output DC blocking
-Fabrication,PCB fabrication (prototype),1,,,30.00-60.00,30.00-60.00,Control/UI board + codec breakout boards; prototype quantity
-Fabrication,Enclosure (DIY/3D print or kit),1,,,20.00-50.00,20.00-50.00,220x150x50 mm (WxDxH); front/back/side panels
-Power & Connectivity,Full-size SD card socket,1,Panel mount,,2.00-3.00,2.00-3.00,Breakout from Teensy 4.1 SDIO pads; short ribbon harness; left side panel
+Passives & Protection,Ceramic capacitor 15 pF,2,0402/0603,,0.02,0.04,FE1.1s crystal load capacitors
+Passives & Protection,Soft-latch passives (R + C misc),1,0603/0805,,0.50,0.50,Debounce cap; RC timeout network; pull-up/pull-down resistors for latch
+Fabrication,PCB fabrication (prototype),1,,,30.00-60.00,30.00-60.00,Main (4L) + input mother (4L) + daughter/output (2L) + key (2L); prototype qty
+Fabrication,Enclosure (DIY/3D print or kit),1,,,20.00-50.00,20.00-50.00,260x84.6x50 mm (WxDxH)
 User Supplied,SD card (UHS-I U3 / V30),1,Full-size SD,,8.00-15.00,,User-supplied; 32-64 GB recommended; pre-format 64 KB clusters

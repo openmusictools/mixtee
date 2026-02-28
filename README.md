@@ -13,12 +13,12 @@ Built around the Teensy 4.1, MIXTEE is a compact desktop mixer designed for elec
 - **16-track recording** direct to SD card (48 kHz / 24-bit WAV, 8 MB PSRAM buffer)
 - **USB audio interface** (2-in / 2-out, USB Audio Class 1)
 - **MIDI control** via 2× USB host ports + 5-pin DIN input
-- **4.3" TFT display** with dedicated nav/edit encoders and 12 illuminated CHOC keys
+- **4.3" TFT display** with dedicated nav/edit encoders and 16 illuminated CHOC keys
 - **Compact form factor** — 260 × 84.6 × 50 mm, all controls on top, all audio on back
 
 ## Architecture
 
-MIXTEE uses four AK4619VN codecs on two TDM buses, driven by the Teensy 4.1's Cortex-M7 at 600 MHz. The analog front-end features OPA1678 op-amps with Sallen-Key anti-alias and reconstruction filters. Power is supplied via a dedicated USB-C port (5V/3A) with a separate USB-C for computer data, eliminating ground loop noise.
+MIXTEE uses four AK4619VN codecs on two TDM buses, driven by the Teensy 4.1's Cortex-M7 at 600 MHz. The analog front-end features OPA1678 op-amps with Sallen-Key anti-alias and reconstruction filters. Power is supplied via a dedicated USB-C port (5V/5A USB PD, fallback 5V/3A) with a separate USB-C for computer data, eliminating ground loop noise.
 
 ## Repository Structure
 
@@ -33,7 +33,9 @@ mixtee/
 │   ├── ui-architecture.md  ← view/page/module hierarchy, screen layouts
 │   ├── enclosure.md    ← physical dimensions, panel layouts, jack spacing
 │   ├── usb-audio.md    ← USB audio details + optional multitrack upgrade paths
-│   └── pcb-architecture.md ← board definitions, interconnects, connectors
+│   ├── pcb-architecture.md ← board definitions, interconnects, connectors
+│   ├── pin-mapping.md  ← Teensy 4.1 pin assignments, GPIO budget, FFC pinouts
+│   └── ak4619-wiring.md ← AK4619VN codec pin table, I2C, TDM, power, registers
 ├── hardware/           ← schematics, PCB, mechanical, BOM
 │   ├── bom.csv         ← bill of materials
 │   ├── mixtee-layout.svg    ← panel layout drawing (editable)
@@ -54,6 +56,8 @@ mixtee/
 | [Enclosure](docs/enclosure.md) | Physical dimensions, panel layouts, connector placement |
 | [USB Audio](docs/usb-audio.md) | USB audio interface details and future upgrade options |
 | [PCB Architecture](docs/pcb-architecture.md) | Board definitions, interconnects, connector plan |
+| [Pin Mapping](docs/pin-mapping.md) | Teensy 4.1 pin assignments, GPIO budget, FFC cable pinouts |
+| [AK4619VN Wiring](docs/ak4619-wiring.md) | Codec pin table, I2C addressing, TDM interface, power, registers |
 
 ## Status
 

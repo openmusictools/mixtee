@@ -23,18 +23,23 @@ Total: **5 unique PCB designs**, 9 physical boards.
 **Components:**
 
 - Teensy 4.1 on socket headers (+ PSRAM soldered to Teensy underside)
-- Power management: TPS22918 load switch, polyfuse, ferrite beads, ADP7118 analog LDO
+- TCA9548A I2C mux (address 0x70) — isolates codec I2C buses per Input Mother Board via FFC
+- Power management: TPS22965 load switch, polyfuse, ferrite beads, ADP7118 analog LDO
 - PWR USB-C receptacle (routes to back panel cutout, power only)
 - PC USB-C receptacle (top panel, data only)
-- USB 2.0 hub module (1 upstream to Teensy, 2 downstream)
+- FE1.1s USB 2.0 hub IC (1 upstream to Teensy USB host, 2 downstream) + 12 MHz crystal
 - Dual stacked USB-A receptacle (MIDI host, top panel)
-- MIDI IN 5-pin DIN receptacle (top panel)
+- MIDI IN 3.5mm TRS Type A jack + 6N138 optocoupler circuit (top panel)
 - Power button (momentary, top panel)
 - 2× rotary encoder footprints (top panel, through-hole)
 - TFT display connector (to RA8875 module via ribbon/header)
 - Full-size SD card slot (top panel, breakout from Teensy SDIO)
 - Volume pot 10 kΩ log (top panel)
-- Headphone 1/4" TRS jack + headphone amp circuit (top panel)
+- TPA6132A2 headphone amplifier IC (ground-referenced stereo output)
+- Headphone 1/4" TRS jack + volume pot → TPA6132A2 (top panel)
+- 4× DG419 or TS5A3159 analog switch ICs (pop suppression, GPIO-controlled)
+- Soft-latch power circuit (SR latch from 2× BSS138 or 74LVC1G00 NAND + RC timeout)
+- 2.5V virtual ground buffer (1× OPA1678 section + precision resistor divider)
 - Bulk caps, decoupling, test points
 
 **Panel-mount components** protrude through top panel cutouts. PWR USB-C protrudes through a back panel cutout.
@@ -101,31 +106,33 @@ Both output boards are passive — jacks + ESD only. The output analog stages (r
 
 ### Key PCB
 
-- **Dimensions:** ~72 × 54 mm (3 columns × 4 rows at 18 mm pitch)
+- **Dimensions:** ~72 × 72 mm (4 columns × 4 rows at 18 mm pitch)
 - **Orientation:** Horizontal, mounted through top panel
 - **Instances:** 1
 
 **Components:**
 
-- 12× Kailh CHOC hotswap sockets
-- 12× WS2812B-2020 NeoPixels (daisy-chained, single data pin)
-- 12× 100nF ceramic decoupling caps
-- Connector(s) to main board
+- 16× Kailh CHOC hotswap sockets
+- 16× WS2812B-2020 NeoPixels (daisy-chained, single data pin)
+- 16× 100nF ceramic decoupling caps
+- MCP23017 I2C GPIO expander (address 0x20) — handles 4×4 key scan matrix
+- 16× 1N4148 signal diodes (anti-ghosting, cathode toward row)
+- 6-pin JST-PH connector to main board (NeoPixel DIN, I2C SDA, SCL, MCP23017 INT, 5V, GND)
 
 ------
 
 ## Board Summary
 
-| ID | Name | Unique design | Instances | Active components |
-|----|------|--------------|-----------|-------------------|
-| M | Main Board | Yes | 1 | Teensy, power mgmt, USB hub, HP amp, connectors |
-| 1-top | Input Mother (TDM1) | Shared w/ 2-top | 1 | 2× AK4619VN, 8× input analog, 4× output analog |
-| 2-top | Input Mother (TDM2) | Shared w/ 1-top | 1 | 2× AK4619VN, 8× input analog |
-| 1-bot | Input Daughter (TDM1) | Shared w/ all daughters | 1 | ESD diodes only |
-| 2-bot | Input Daughter (TDM2) | Shared | 1 | ESD diodes only |
-| O-top | Output Top | Shared (or near-identical) | 1 | ESD diodes only |
-| O-bot | Output Bottom | Shared | 1 | ESD diodes only |
-| K | Key PCB | Yes | 1 | 12× NeoPixel, 12× CHOC socket |
+| ID | Name | Unique design | Instances | Layers | Active components |
+|----|------|--------------|-----------|--------|-------------------|
+| M | Main Board | Yes | 1 | 4 | Teensy, power mgmt, FE1.1s hub, TPA6132A2 HP amp, DG419 mute, 6N138 MIDI, soft-latch |
+| 1-top | Input Mother (TDM1) | Shared w/ 2-top | 1 | 4 | 2× AK4619VN, 8× input analog, 4× output analog |
+| 2-top | Input Mother (TDM2) | Shared w/ 1-top | 1 | 4 | 2× AK4619VN, 8× input analog |
+| 1-bot | Input Daughter (TDM1) | Shared w/ all daughters | 1 | 2 | ESD diodes only |
+| 2-bot | Input Daughter (TDM2) | Shared | 1 | 2 | ESD diodes only |
+| O-top | Output Top | Shared (or near-identical) | 1 | 2 | ESD diodes only |
+| O-bot | Output Bottom | Shared | 1 | 2 | ESD diodes only |
+| K | Key PCB | Yes | 1 | 2 | 16× NeoPixel, 16× CHOC socket, MCP23017 |
 
 **Unique PCB designs:** 5 (Main, Input Mother, Daughter/Output, Key, plus possibly a separate Output Top if connector differs)
 
@@ -143,9 +150,7 @@ Used between each mother+daughter pair. Short vertical connection (~15 mm stando
 | 2-top ↔ 2-bot | 4× analog (R input ch 10,12,14,16) + 5V_A + GND | 6 |
 | O-top ↔ O-bot | 4× analog (R output) + GND | 5 |
 
-**Connector:** 2×4 or 2×5 pin header + socket (2.54 mm pitch). Cheap, solderable, rigid once mated. The fixed standoff height acts as a mechanical spacer between the two boards. Polarized by asymmetric pin count or keyed housing.
-
-Alternative: board-to-board mezzanine connectors (e.g., Samtec TMM/SMM series) for more precise alignment, but overkill for a DIY project.
+**Connector:** 6-pin JST-PH wire harness (2.0 mm pitch). Flexible cable accommodates both boards hanging off the same back panel jacks — no rigid alignment required. Cheap, polarized, pre-crimped harnesses readily available. Both boards are mechanically supported by their panel-mount jack nuts, so no structural rigidity needed from the connector.
 
 ### Main Board ↔ Input Mother Boards (FFC cable)
 
@@ -189,20 +194,16 @@ Alternative: board-to-board mezzanine connectors (e.g., Samtec TMM/SMM series) f
 
 ### Main Board ↔ Key PCB
 
-| Signal | Pin |
-|--------|-----|
-| NeoPixel DIN | 1 |
-| 5V | 2 |
-| GND | 3 |
-| (spare) | 4 |
-| Switch GPIO 1–12 | 5–16 |
+| Pin | Signal | Notes |
+|-----|--------|-------|
+| 1 | NeoPixel DIN | Data line from Teensy pin 6 |
+| 2 | I2C SDA | Shared Wire bus (Teensy pin 18) |
+| 3 | I2C SCL | Shared Wire bus (Teensy pin 19) |
+| 4 | MCP23017 INT | Optional interrupt to Teensy (pin 22) |
+| 5 | 5V | NeoPixel + MCP23017 power |
+| 6 | GND | Common ground |
 
-**Connector option A (recommended):** Split into two connectors:
-
-- **4-pin JST-PH** — NeoPixel data + 5V + GND + spare. Allows testing LEDs independently.
-- **12-pin JST-PH** — 12× switch GPIO lines. One pin per switch, active-low with internal pull-ups on Teensy.
-
-**Connector option B:** Single 16-pin JST-PH or IDC ribbon. Simpler assembly, fewer cables.
+**Connector:** 6-pin JST-PH (2.0 mm pitch), ~30–40 mm cable. The MCP23017 on the Key PCB handles the 4×4 key scan matrix over I2C, eliminating the need for individual switch GPIO lines.
 
 ### Main Board ↔ Display
 
@@ -226,10 +227,10 @@ Alternative: board-to-board mezzanine connectors (e.g., Samtec TMM/SMM series) f
 
 | Connection | Type | Pitch | Pins | Cable length |
 |------------|------|-------|------|-------------|
-| Mother ↔ Daughter (×3) | Pin header + socket | 2.54 mm | 2×4 or 2×5 | Rigid (~15 mm) |
+| Mother ↔ Daughter (×3) | JST-PH wire harness | 2.0 mm | 6 | ~15–20 mm |
 | Main ↔ Input Mother (×2) | FFC + ZIF | 1.0 mm | 16 | ~40–50 mm |
 | 1-top → O-top | JST-PH or FFC | 2.0 / 1.0 mm | 10 | ~80 mm |
-| Main ↔ Key PCB | JST-PH (split 4+12) | 2.0 mm | 4 + 12 | ~30–40 mm |
+| Main ↔ Key PCB | JST-PH | 2.0 mm | 6 | ~30–40 mm |
 | Main ↔ Display | Per module | Varies | 8–10 | ~20 mm |
 
 ------
@@ -260,3 +261,11 @@ PWR USB-C mounts on the main board and protrudes through a cutout on the far rig
 1. **Input mother boards (1-top, 2-top):** Same PCB. Codec I2C addresses set by solder jumpers. Output analog section on Board 1-top populated; on Board 2-top left empty.
 2. **All daughter/output boards (1-bot, 2-bot, O-top, O-bot):** Potentially same PCB if connector placement and jack spacing match. All are 4× TS jacks + ESD + one connector. Worth investigating during schematic phase — could reduce unique designs from 5 to 3 (Main, Input Mother, Universal Daughter, Key).
 3. **Key PCB** is standalone with no reuse opportunities.
+
+------
+
+## Mechanical Mounting
+
+- **Main Board:** Screwed to top panel via standoffs (M3 or M2.5). Board hangs below top panel, components protrude through panel cutouts.
+- **I/O Boards (Mother, Daughter, Output):** Mechanically held by panel-mount jack nuts — the 1/4" TS jacks thread through back panel holes and their nuts clamp the boards to the panel. No additional standoffs needed.
+- **Key PCB:** Mounted to top panel via standoffs or snap-fit clips. CHOC switches protrude through top panel cutouts, keycaps sit flush with panel surface.
