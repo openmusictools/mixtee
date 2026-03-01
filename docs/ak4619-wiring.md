@@ -280,7 +280,7 @@ Each AK4619VN codec requires the following power connections:
 **Power architecture relationship:**
 
 ```
-PWR USB-C (5V) → TPS22965 → Main Board 5V rail
+PWR USB-C (5V, Power Board) → cable → TPS22965 → Main Board 5V rail
                                     ↓
                             FFC pin 9 (5V raw)
                                     ↓

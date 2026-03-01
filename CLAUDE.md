@@ -20,7 +20,7 @@ MIXTEE is an open-source 16-input / 8-output digital mixer built around the Teen
 
 **Key hardware ICs:** AK4619VN (codec), TCA9548A (I2C mux), MCP23017 (GPIO expander), RA8875 (TFT controller), FE1.1s (USB hub, IO Board), TPA6132A2 (headphone amp, IO Board), STUSB4500 (USB PD sink), TPS22965 (load switch).
 
-**PCB architecture:** 6 unique PCB designs, 10 physical boards — Main Board, 1× IO Board, 2× Input Mother, 2× Input Daughter, 2× Output, 1× Key PCB. PC USB-C on back panel (next to PWR USB-C). See `docs/pcb-architecture.md`.
+**PCB architecture:** 7 unique PCB designs, 11 physical boards — Main Board, 1× IO Board, 1× Power Board, 2× Input Mother, 2× Input Daughter, 2× Output, 1× Key PCB. PC USB-C on top panel (Main Board). PWR USB-C on back panel (Power Board). See `docs/pcb-architecture.md`.
 
 ## Key Documentation Cross-References
 

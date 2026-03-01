@@ -4,9 +4,7 @@
 
 All 24 audio jacks (12 stereo pairs) on the back panel, evenly spaced in 2 rows (L top, R bottom). No physical gaps between groups — separation is by labeling only.
 
-**PWR — USB-C (power only, USB PD):** Located on the back panel (right side, looking at back). 5V/5A via USB PD (fallback 5V/3A), no data lines. Plug-and-forget connection to PD-capable power supply.
-
-**PC — USB-C (data only):** Located on the back panel next to PWR USB-C (right side). USB Audio 2-in/2-out + USB MIDI composite device. Labeled "PC" — clear labeling required to distinguish from adjacent PWR port.
+**PWR — USB-C (power only, USB PD):** Located on the back panel (right side, looking at back), on a dedicated **Power Board**. 5V/5A via USB PD (fallback 5V/3A), no data lines. Plug-and-forget connection to PD-capable power supply. 2-pin cable carries 5V + GND to Main Board.
 
 ### Jack order (left to right, looking at back)
 
@@ -29,9 +27,14 @@ Enclosure: **260 × 100 × 50 mm** (W × D × H).
 
 Dimensions: **260 mm** wide × **84.6 mm** deep (front to back). Outputs moved to back panel — top panel is now entirely controls.
 
-### Left zone — SD + Display + Encoders (Main Board)
+### Left zone — PC USB-C + SD + Display + Encoders (Main Board)
 
-**SD card slot** (left of display):
+**PC — USB-C (data only):**
+- PCB-mount USB-C receptacle on Main Board, protrudes through top panel cutout
+- USB Audio 2-in/2-out + USB MIDI composite device
+- Labeled "PC" on top panel
+
+**SD card slot** (left of display, vertically aligned with bottom edge of screen):
 - Full-size SD card socket, slot opens upward through top panel
 - SDIO routed from Teensy bottom pads 42–47
 

@@ -91,19 +91,20 @@
 
 **Dual USB-C (separate power and data):**
 
-- **PWR — USB-C (power only, USB PD 5V/5A):**
-  - PCB-mount USB-C receptacle (mid-mount or through-hole)
+- **PWR — USB-C (power only, USB PD 5V/5A) — on Power Board (back panel):**
+  - PCB-mount USB-C receptacle (mid-mount or through-hole) on dedicated Power Board
   - STUSB4500 USB PD sink controller — negotiates 5V @ 5A from PD-capable supplies
   - Fallback: 5.1kΩ CC resistors still present for non-PD supplies (defaults to 5V/3A)
   - VBUS and GND connected; D+/D- not routed — power only
   - STUSB4500 configured via I2C or NVM to request 5V PDO only (no higher voltages)
+  - 2-pin cable (5V + GND) from Power Board to Main Board TPS22965 input
   - Labeled "PWR" on back panel (right side)
-- **PC — USB-C (data only):**
-  - Second USB-C breakout or PCB-mount receptacle
+- **PC — USB-C (data only) — on Main Board (top panel):**
+  - PCB-mount USB-C receptacle on Main Board
   - D+/D- routed to Teensy 4.1 native USB device port
   - VBUS not used for system power (only for USB signaling / pull-ups as needed)
   - Carries USB Audio (2-in/2-out UAC1) + USB MIDI (composite device)
-  - Labeled "PC" on back panel (next to PWR USB-C, right side)
+  - Labeled "PC" on top panel (left zone, near SD card slot)
   - Ground connected to system GND through ferrite bead to reduce computer-injected noise
 
 ### Power Budget (5V rail)
@@ -148,7 +149,7 @@
 
 **Protection:**
 
-- Input polyfuse (2.5A hold / 5A trip) on USB-C VBUS
+- Input polyfuse (2.5A hold / 5A trip) on Power Board USB-C VBUS
 - Soft-start load switch (see above)
 - Per-port current limiting for USB host (TPS2051 power switches on IO Board)
 - Bulk capacitor (1000-2200 µF) near NeoPixel power entry
@@ -222,6 +223,7 @@
 |-------|--------|---------|-----------|
 | Main Board | **4-layer** | Sig / GND / PWR / Sig | TDM clock integrity (24.576 MHz BCLK), mixed-signal ground plane, power distribution |
 | IO Board | **2-layer** | Sig / GND | USB Full-Speed only (12 Mbps), headphone analog, MIDI — no high-speed digital |
+| Power Board | **2-layer** | Sig / GND | USB-C + PD controller + polyfuse only; thick traces for 5A current |
 | Input Mother Board | **4-layer** | Sig / GND / PWR / Sig | AK4619VN codecs + analog input stages + TDM signals need solid ground reference |
 | Input Daughter Board | **2-layer** | Sig / GND | Simple board: jacks + ESD diodes + connector, no high-speed signals |
 | Output Board | **2-layer** | Sig / GND | Simple board: jacks + ESD diodes + connector, no high-speed signals |
@@ -288,9 +290,9 @@
 | Part                            | Quantity | Notes                             |
 | ------------------------------- | -------- | --------------------------------- |
 | TCA9548A I2C mux                | 1        | I2C bus switch on main board; isolates codec boards; address 0x70 |
-| USB-C receptacle (PCB-mount)    | 1        | PWR port — power only, back panel             |
-| STUSB4500 USB PD sink controller | 1       | Negotiates 5V/5A; fallback 5V/3A via CC resistors |
-| USB-C receptacle (PCB-mount)    | 1        | PC port — data only (audio+MIDI); back panel next to PWR |
+| USB-C receptacle (PCB-mount)    | 1        | PWR port — power only; on Power Board (back panel) |
+| STUSB4500 USB PD sink controller | 1       | On Power Board; negotiates 5V/5A; fallback 5V/3A via CC resistors |
+| USB-C receptacle (PCB-mount)    | 1        | PC port — data only (audio+MIDI); on Main Board (top panel) |
 | FE1.1s USB 2.0 hub IC           | 1        | On IO Board; upstream via FFC, 2 downstream to USB-A |
 | 12 MHz crystal                  | 1        | FE1.1s clock source on IO Board, 15 pF load caps |
 | 6N138 optocoupler               | 1        | MIDI IN galvanic isolation on IO Board, 31.25 kbaud |
@@ -370,7 +372,8 @@
 **Top panel (260 × 84.6 mm — all controls and connectivity):**
 
 Left zone (Main Board):
-- Full-size SD card slot (left of display, slot opens upward)
+- PC USB-C (data only — USB Audio + MIDI)
+- Full-size SD card slot (left of display, vertically aligned with bottom edge of screen, slot opens upward)
 - 1× TFT display (4.3" RA8875, ~93×56 mm visible area)
 - 3× rotary encoders (NavX + NavY + Edit): horizontal row below display
 
@@ -388,7 +391,7 @@ Right column (IO Board):
 - 24× 1/4" TS jacks: 12 evenly spaced stereo pairs (L top row, R bottom row), 20 mm center-to-center
 - Order left to right (looking at back): Master, AUX1, AUX2, AUX3, 15/16, 13/14, 11/12, 9/10, 7/8, 5/6, 3/4, 1/2
 - No physical gaps between output and input groups — separation by labeling only
-- PWR USB-C (power only, 5V/5A USB PD) + PC USB-C (data only, USB Audio + MIDI): right side of back panel, side by side
+- PWR USB-C (power only, 5V/5A USB PD): right side of back panel, on dedicated Power Board
 
 **No front, left, or right side panels with connectors.** All I/O accessible from top and back.
 

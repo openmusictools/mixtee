@@ -11,8 +11,9 @@ UI Components,100nF ceramic cap (key LEDs),16,0402/0603,,0.02,0.32,Decoupling pe
 UI Components,MCP23017 I2C GPIO expander,1,SOIC-28 / DIP-28,,1.50,1.50,4x4 key scan matrix; on Key PCB; address 0x20
 UI Components,CHOC v2 key switches,16,Through-hole,,1.00,16.00,User-supplied or included; hotswap into custom PCB
 Power & Connectivity,TCA9548A I2C mux,1,TSSOP-24,,1.50,1.50,I2C bus switch; isolates codec boards; address 0x70
-Power & Connectivity,USB-C receptacle (PCB-mount PWR),1,Mid-mount SMD (GCT USB4105-GF-A),,1.00,1.00,PWR port; power only (no data); back panel
-Power & Connectivity,STUSB4500 USB PD sink controller,1,QFN-24,,2.00,2.00,Negotiates 5V/5A from PD supplies; fallback 5V/3A via CC resistors; NVM-configurable
+Power & Connectivity,USB-C receptacle (PCB-mount PWR),1,Mid-mount SMD (GCT USB4105-GF-A),,1.00,1.00,Power Board; PWR port; power only (no data); back panel
+Power & Connectivity,USB-C receptacle (PCB-mount PC),1,Mid-mount SMD,,1.00,1.00,Main Board; PC port; data only (audio+MIDI); top panel
+Power & Connectivity,STUSB4500 USB PD sink controller,1,QFN-24,,2.00,2.00,Power Board; negotiates 5V/5A from PD supplies; fallback 5V/3A via CC resistors; NVM-configurable
 Power & Connectivity,FE1.1s USB 2.0 hub IC,1,SSOP-28,,1.50,1.50,IO Board; upstream via FFC from Teensy USB host; 2 downstream to USB-A
 Power & Connectivity,12 MHz crystal,1,HC49/SMD,,0.50,0.50,IO Board; FE1.1s clock source; 15 pF load capacitors
 Power & Connectivity,TPS2051 power switch,2,SOT-23-5,,1.50,3.00,IO Board; USB host port per-port VBUS current limiting (500 mA each)
@@ -44,7 +45,7 @@ Passives & Protection,Electrolytic capacitor 1000-2200 uF,2,Through-hole,,0.75,1
 Passives & Protection,Ceramic capacitor 0.1 uF,60,0402/0603/0805,,0.02,1.20,Local decoupling everywhere (ICs + op-amps + codec AVDD/DVDD)
 Passives & Protection,Ferrite bead,3,0805,,0.15,0.45,5V_DIG to LDO input isolation; belt-and-suspenders with LDO
 Passives & Protection,Resistor 300-500 ohm,1,0805,,0.02,0.02,NeoPixel data line series resistor (reduces ringing)
-Passives & Protection,Polyfuse 2.5A/5A,1,Through-hole/SMD,,0.50,0.50,USB-C VBUS input overcurrent protection
+Passives & Protection,Polyfuse 2.5A/5A,1,Through-hole/SMD,,0.50,0.50,Power Board; USB-C VBUS input overcurrent protection
 Passives & Protection,1N4148 signal diode (key matrix),16,SOD-323,,0.05,0.80,Anti-ghosting diodes for 4x4 key matrix on Key PCB
 Passives & Protection,Schottky clamp diodes,25,SOD-323/SOT-23,,0.10,2.50,ESD protection on all audio jacks (24 TS + 1 TRS headphone)
 Passives & Protection,Film capacitors 3.3nF,24,0603/0805,,0.05,1.20,Anti-alias + reconstruction Sallen-Key filters
@@ -55,6 +56,6 @@ Passives & Protection,AC coupling caps 10 uF,16,0805/through-hole,,0.10,1.60,Inp
 Passives & Protection,AC coupling caps 47 uF,8,Through-hole,,0.15,1.20,Output DC blocking
 Passives & Protection,Ceramic capacitor 15 pF,2,0402/0603,,0.02,0.04,IO Board; FE1.1s crystal load capacitors
 Passives & Protection,Soft-latch passives (R + C misc),1,0603/0805,,0.50,0.50,Debounce cap; RC timeout network; pull-up/pull-down resistors for latch
-Fabrication,PCB fabrication (prototype),1,,,30.00-60.00,30.00-60.00,Main (4L) + IO (2L) + input mother (4L) + daughter/output (2L) + key (2L); prototype qty
+Fabrication,PCB fabrication (prototype),1,,,30.00-60.00,30.00-60.00,Main (4L) + IO (2L) + power (2L) + input mother (4L) + daughter/output (2L) + key (2L); prototype qty
 Fabrication,Enclosure (DIY/3D print or kit),1,,,20.00-50.00,20.00-50.00,260x100x50 mm (WxDxH)
 User Supplied,SD card (UHS-I U3 / V30),1,Full-size SD,,8.00-15.00,,User-supplied; 32-64 GB recommended; pre-format 64 KB clusters
