@@ -22,10 +22,11 @@
 
 ## Routing
 
-- AIN1: All F.Cu, 0.3mm traces
-- AIN2-4: F.Cu stubs + B.Cu hops (via pairs) to avoid crossing AIN1 vertical
-- +5VA: F.Cu 0.5mm power trace
-- GND: SMD pads get stub traces to vias connecting to B.Cu ground zone; TH pads connect through zone directly
+Autorouted via FreeRouting (Specctra DSN/SES round-trip). 44 trace segments, 2 layers.
+
+- **AIN1-4:** 0.3mm traces (Audio_Analog net class), F.Cu + B.Cu with vias
+- **+5VA:** 0.5mm traces (Power net class), F.Cu
+- **GND:** B.Cu ground zone, F.Cu stubs to vias for SMD pads; TH pads connect through zone directly
 
 ## Generator
 
@@ -33,4 +34,4 @@
 
 ## Status
 
-Work in progress. Schematic and footprint placement complete. Trace routing implemented but has 2 remaining DRC shorting errors where AIN1/AIN2 traces pass through jack S pads. See `journal.md` for details.
+**Routing complete.** DRC passes with 0 errors, 0 unconnected items. 26 cosmetic warnings (silkscreen overlap/edge, library mismatch from generated footprints). Gerbers exported to `gerbers/`.

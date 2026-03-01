@@ -1,0 +1,78 @@
+(footprint "Switchcraft_112BPC"
+  (version 20240108)
+  (generator "custom")
+  (layer "F.Cu")
+  (descr "Switchcraft 112BPC 1/4 inch (6.35mm) TS mono phone jack, PCB mount, bushing mount")
+  (tags "phone jack 6.35mm quarter-inch TS mono Switchcraft 112BPC audio")
+  (attr through_hole)
+
+  ;; Origin at bushing center (panel mounting reference point)
+  ;; Barrel extends in -X direction (toward board edge / panel)
+  ;; Pins are in +X direction (into the PCB interior)
+
+  ;; Pad 1: Tip terminal - 17.78mm behind bushing, on centerline
+  (pad "T" thru_hole circle
+    (at 17.78 0)
+    (size 2.4 2.4)
+    (drill 1.3)
+    (layers "*.Cu" "*.Mask")
+  )
+
+  ;; Pad 2: Sleeve terminal - 11.43mm behind bushing, offset 7.62mm
+  (pad "S" thru_hole circle
+    (at 11.43 7.62)
+    (size 2.4 2.4)
+    (drill 1.3)
+    (layers "*.Cu" "*.Mask")
+  )
+
+  ;; Board edge cutout for barrel pass-through (NPTH mounting reference)
+  ;; The bushing goes through the panel, not the PCB
+  ;; But the barrel body sits near the board edge
+
+  ;; Fabrication layer - jack body outline
+  (fp_line (start -4.0 -6.35) (end 22.0 -6.35)
+    (stroke (width 0.1) (type solid)) (layer "F.Fab"))
+  (fp_line (start 22.0 -6.35) (end 22.0 10.0)
+    (stroke (width 0.1) (type solid)) (layer "F.Fab"))
+  (fp_line (start 22.0 10.0) (end -4.0 10.0)
+    (stroke (width 0.1) (type solid)) (layer "F.Fab"))
+  (fp_line (start -4.0 10.0) (end -4.0 -6.35)
+    (stroke (width 0.1) (type solid)) (layer "F.Fab"))
+
+  ;; Barrel outline on fab layer (circular, at bushing center)
+  (fp_circle (center 0 0) (end 4.76 0)
+    (stroke (width 0.1) (type solid)) (layer "F.Fab"))
+
+  ;; Courtyard
+  (fp_line (start -5.5 -7.5) (end 23.5 -7.5)
+    (stroke (width 0.05) (type solid)) (layer "F.CrtYd"))
+  (fp_line (start 23.5 -7.5) (end 23.5 11.5)
+    (stroke (width 0.05) (type solid)) (layer "F.CrtYd"))
+  (fp_line (start 23.5 11.5) (end -5.5 11.5)
+    (stroke (width 0.05) (type solid)) (layer "F.CrtYd"))
+  (fp_line (start -5.5 11.5) (end -5.5 -7.5)
+    (stroke (width 0.05) (type solid)) (layer "F.CrtYd"))
+
+  ;; Silkscreen - outline (clipped to stay within board edge for edge-mount placement)
+  (fp_line (start 0.5 -6.35) (end 19.5 -6.35)
+    (stroke (width 0.12) (type solid)) (layer "F.SilkS"))
+  (fp_line (start 19.5 -6.35) (end 19.5 9.5)
+    (stroke (width 0.12) (type solid)) (layer "F.SilkS"))
+  (fp_line (start 19.5 9.5) (end 0.5 9.5)
+    (stroke (width 0.12) (type solid)) (layer "F.SilkS"))
+  (fp_line (start 0.5 9.5) (end 0.5 -6.35)
+    (stroke (width 0.12) (type solid)) (layer "F.SilkS"))
+
+  ;; Reference designator
+  (fp_text reference "REF**"
+    (at 9.0 -8.5)
+    (layer "F.SilkS")
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value "112BPC"
+    (at 9.0 12.5)
+    (layer "F.Fab")
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+)
