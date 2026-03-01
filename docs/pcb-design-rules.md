@@ -60,7 +60,7 @@ Primary: **JLCPCB** or **PCBWay** standard capabilities. All design rules chosen
 | L3 | Power plane (5V / 3.3V) | 0.5 oz |
 | L4 (Bottom) | Signal + components | 1 oz |
 
-**2-layer stackup (Daughter/Output, Key PCB):**
+**2-layer stackup (IO Board, Daughter/Output, Key PCB):**
 
 | Layer | Function | Copper |
 |-------|----------|--------|

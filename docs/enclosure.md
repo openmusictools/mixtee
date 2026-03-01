@@ -6,6 +6,8 @@ All 24 audio jacks (12 stereo pairs) on the back panel, evenly spaced in 2 rows 
 
 **PWR — USB-C (power only, USB PD):** Located on the back panel (right side, looking at back). 5V/5A via USB PD (fallback 5V/3A), no data lines. Plug-and-forget connection to PD-capable power supply.
 
+**PC — USB-C (data only):** Located on the back panel next to PWR USB-C (right side). USB Audio 2-in/2-out + USB MIDI composite device. Labeled "PC" — clear labeling required to distinguish from adjacent PWR port.
+
 ### Jack order (left to right, looking at back)
 
 1. Master, 2. AUX1, 3. AUX2, 4. AUX3, 5. 15/16, 6. 13/14, 7. 11/12, 8. 9/10, 9. 7/8, 10. 5/6, 11. 3/4, 12. 1/2
@@ -27,9 +29,13 @@ Enclosure: **260 × 100 × 50 mm** (W × D × H).
 
 Dimensions: **260 mm** wide × **84.6 mm** deep (front to back). Outputs moved to back panel — top panel is now entirely controls.
 
-### Left zone — Display + Encoders
+### Left zone — SD + Display + Encoders (Main Board)
 
-**Display** (upper left):
+**SD card slot** (left of display):
+- Full-size SD card socket, slot opens upward through top panel
+- SDIO routed from Teensy bottom pads 42–47
+
+**Display** (upper left, right of SD slot):
 - TFT 93 × 56 mm visible area
 
 **Encoder section** (below display, horizontal row):
@@ -38,9 +44,9 @@ Dimensions: **260 mm** wide × **84.6 mm** deep (front to back). Outputs moved t
 - Edit encoder (right) — value editing
 - Arranged in a horizontal row beneath the display
 
-### Right zone — Keys + Monitoring + Connectivity
+### Center — Keys (Key PCB)
 
-**4×4 CHOC key grid** (left portion of right zone):
+**4×4 CHOC key grid**:
 - Row 1 (channel controls): Mute, Solo, Rec, (assignable)
 - Row 2: (assignable), (assignable), (assignable), (assignable)
 - Row 3: (assignable), (assignable), (assignable), (assignable)
@@ -48,11 +54,14 @@ Dimensions: **260 mm** wide × **84.6 mm** deep (front to back). Outputs moved t
 
 - Custom PCB with CHOC hotswap sockets + WS2812B-2020 per key + MCP23017 I2C GPIO expander + 100nF decoupling caps
 
-**Right-side column** (to the right of keys, 2-wide vertical stack):
+### Right column — Monitoring + Connectivity (IO Board)
+
+All right-column panel-mount components sit on the IO Board, connected to the main board via 12-pin FFC.
+
 - Vol pot + Power button (top row)
-- Headphone 1/4″ TRS jack + PC USB-C (data only: USB Audio 2-in/2-out + USB MIDI composite device)
-- Full-size SD card slot (breakout from Teensy 4.1 SDIO lines) + MIDI HOST dual USB-A (stacked)
-- MIDI TH. (3.5mm TRS Type A — MIDI OUT/THRU) + MIDI IN (3.5mm TRS Type A)
+- Headphone 1/4″ TRS jack
+- MIDI HOST dual USB-A (stacked)
+- MIDI OUT + MIDI IN (3.5mm TRS Type A)
 
 Power-on: press button → load switch latches on → Teensy boots.
 Power-off: press button → firmware saves state to SD → load switch releases.

@@ -103,7 +103,7 @@
   - D+/D- routed to Teensy 4.1 native USB device port
   - VBUS not used for system power (only for USB signaling / pull-ups as needed)
   - Carries USB Audio (2-in/2-out UAC1) + USB MIDI (composite device)
-  - Labeled "PC" on top panel
+  - Labeled "PC" on back panel (next to PWR USB-C, right side)
   - Ground connected to system GND through ferrite bead to reduce computer-injected noise
 
 ### Power Budget (5V rail)
@@ -122,14 +122,14 @@
 **5V Rail Partitioning:**
 
 - 5V_DIG: USB hub VBUS + NeoPixels + TFT backlight (noisy loads)
-- 5V_A: Dedicated low-noise LDO for audio analog stages
+- 5V_A: Dedicated low-noise LDO for audio analog stages (also routed to IO Board via FFC for headphone amp)
 
 **Audio Analog Power:**
 
 - **LDO regulator:** ADP7118 — 5V input → 3.3V_A clean analog rail (3 instances total)
   - Ultra-low noise: <10 µV RMS (vs. ferrite bead approach which only filters HF)
   - Each Input Mother Board has its own ADP7118, powered from FFC pin 9 (5V raw)
-  - Main Board has a third ADP7118 for the headphone amplifier and virtual ground buffer
+  - Main Board has a third ADP7118 for the virtual ground buffer; 5V_A also routes via FFC to the IO Board for the headphone amplifier
   - Separate LDO per board, not shared with digital 3.3V
   - Provides clean supply for op-amps and codec analog sections
   - **Op-amps run single-supply on 5V** with 2.5V virtual ground biasing (no charge pump needed)
@@ -150,7 +150,7 @@
 
 - Input polyfuse (2.5A hold / 5A trip) on USB-C VBUS
 - Soft-start load switch (see above)
-- Per-port current limiting for USB host (TPS2051-class power switches or hub-integrated)
+- Per-port current limiting for USB host (TPS2051 power switches on IO Board)
 - Bulk capacitor (1000-2200 µF) near NeoPixel power entry
 - Local decoupling at every subsystem
 
@@ -161,44 +161,45 @@
 
 ### USB Host Hub
 
-**FE1.1s discrete USB 2.0 hub IC** on main board (~$1.50):
+**FE1.1s discrete USB 2.0 hub IC** on IO Board (~$1.50):
 
-- 1 upstream port connected to Teensy 4.1 USB host pins (D+/D-)
-- 2 downstream ports routed to panel-mount USB-A sockets (MIDI host)
+- 1 upstream port connected to Teensy 4.1 USB host pins (D+/D-) via Main↔IO FFC (USB Full-Speed, 12 Mbps)
+- 2 downstream ports routed to panel-mount USB-A sockets (MIDI host, top panel right column)
 - External 12 MHz crystal + 2× 15 pF load capacitors
-- Per-port VBUS power switching via TPS2051 load switches (500 mA per port)
-- Self-powered configuration (VBUS from 5V_DIG rail)
+- Per-port VBUS power switching via TPS2051 load switches (500 mA per port, on IO Board)
+- Self-powered configuration (VBUS from 5V_DIG via FFC)
 - Minimal external components: crystal, caps, pull-up/pull-down resistors per datasheet
 - Overcurrent protection per port (TPS2051 fault output routed to Teensy GPIO for firmware notification)
 
 ### Headphone Amplifier
 
-**TPA6132A2** dedicated headphone driver IC:
+**TPA6132A2** dedicated headphone driver IC (on IO Board):
 
 - Ground-referenced output — no AC coupling capacitors required on headphone jack
 - 25 mW into 32Ω load, 0.01% THD+N typical
-- Single 3.3–5V supply (powered from 5V_A rail)
-- Stereo differential input from DAC outputs (Master L/R from U1 DAC)
-- Output routed through 10kΩ log potentiometer (volume control) to 1/4" TRS headphone jack
-- Headphone detect switch on TRS jack wired to Teensy GPIO (allows firmware to mute main outputs when headphones inserted)
+- Single 3.3–5V supply (powered from 5V_A via Main↔IO FFC pin 11)
+- Stereo differential input from DAC outputs (Master L/R from U1 DAC, routed via FFC pins 1–2)
+- Output routed through 10kΩ log potentiometer (volume control) to 1/4" TRS headphone jack (both on IO Board)
+- Headphone detect switch on TRS jack wired to Teensy GPIO pin 39 via FFC pin 9 (allows firmware to mute main outputs when headphones inserted)
 
 ### MIDI IN Circuit
 
-**3.5mm TRS Type A** input with **6N138** optocoupler isolation:
+**3.5mm TRS Type A** input with **6N138** optocoupler isolation (on IO Board):
 
 - Input side: 220Ω series resistor + 1N4148 protection diode across optocoupler LED
 - TRS wiring (Type A standard): Tip = current sink (pin 5), Ring = current source (pin 4), Sleeve = shield
 - Optocoupler output: open-collector, pulled up to 3.3V via 470Ω resistor
-- Output connects to Teensy UART RX pin for serial MIDI at 31.25 kbaud
+- Output routes via Main↔IO FFC pin 7 (MIDI_RX) to Teensy Serial3 RX pin 15 at 31.25 kbaud
 - 6N138 is industry standard, proven at MIDI baud rate, universal reference schematics available
 - 3.5mm TRS is compact and modern; legacy 5-pin DIN gear connects via TRS-to-DIN adapter cable
 
 ### MIDI OUT Circuit
 
-**3.5mm TRS Type A** output (same connector type as MIDI IN):
+**3.5mm TRS Type A** output (same connector type as MIDI IN, on IO Board):
 
 - TRS wiring (Type A standard): Tip = current sink (pin 5), Ring = current source (pin 4), Sleeve = shield
-- 3.3V → 10Ω → TRS Ring (source); TRS Tip → 33Ω → Serial4 TX (pin 17)
+- MIDI_TX arrives from Teensy Serial4 TX (pin 17) via Main↔IO FFC pin 8
+- 3.3V → 10Ω → TRS Ring (source); TRS Tip → 33Ω → MIDI_TX
 - Standard MIDI current-loop output at 31.25 kbaud
 - No optocoupler needed on output side (optocoupler is on the receiving device)
 - Software handles pass-through of MIDI IN messages and/or Teensy-generated MIDI output
@@ -220,6 +221,7 @@
 | Board | Layers | Stackup | Rationale |
 |-------|--------|---------|-----------|
 | Main Board | **4-layer** | Sig / GND / PWR / Sig | TDM clock integrity (24.576 MHz BCLK), mixed-signal ground plane, power distribution |
+| IO Board | **2-layer** | Sig / GND | USB Full-Speed only (12 Mbps), headphone analog, MIDI — no high-speed digital |
 | Input Mother Board | **4-layer** | Sig / GND / PWR / Sig | AK4619VN codecs + analog input stages + TDM signals need solid ground reference |
 | Input Daughter Board | **2-layer** | Sig / GND | Simple board: jacks + ESD diodes + connector, no high-speed signals |
 | Output Board | **2-layer** | Sig / GND | Simple board: jacks + ESD diodes + connector, no high-speed signals |
@@ -242,7 +244,7 @@
 - **Star topology** for high-current returns (USB, NeoPixels, TFT backlight) near power entry
 - **Keep audio ground references tight** around codec and output jacks
 - **Separate return paths** for noisy digital and sensitive analog currents
-- **Component placement strategy:** Power entry + USB hub on one end of board → Teensy + UI (display, encoders, keys) in center → audio codecs + analog stages + jacks on opposite end. This ensures high-current digital return paths don't cross under the audio section of the ground plane
+- **Component placement strategy:** Power entry on one end of main board → Teensy + UI (display, encoders, keys) in center → audio codecs + analog stages + jacks on opposite end. USB hub and MIDI circuits are on the IO Board, physically separated from the main board audio paths. This ensures high-current digital return paths don't cross under the audio section of the ground plane
 
 ### Layout
 
@@ -288,34 +290,34 @@
 | TCA9548A I2C mux                | 1        | I2C bus switch on main board; isolates codec boards; address 0x70 |
 | USB-C receptacle (PCB-mount)    | 1        | PWR port — power only, back panel             |
 | STUSB4500 USB PD sink controller | 1       | Negotiates 5V/5A; fallback 5V/3A via CC resistors |
-| USB-C receptacle (PCB-mount)    | 1        | PC port — data only (audio+MIDI)  |
-| FE1.1s USB 2.0 hub IC           | 1        | Discrete IC, 12 MHz crystal + caps, per-port VBUS via TPS2051 |
-| 12 MHz crystal                  | 1        | FE1.1s clock source, 15 pF load caps             |
-| 6N138 optocoupler               | 1        | MIDI IN galvanic isolation, 31.25 kbaud           |
-| 1N4148 signal diode             | 1        | MIDI IN optocoupler LED protection                |
-| TPS2051 power switch             | 2        | USB host port current limiting    |
-| USB-A panel-mount socket        | 2        | Host ports for MIDI controllers   |
-| 3.5mm TRS jack (MIDI OUT)       | 1        | MIDI OUT Type A; top panel        |
-| Resistor 33 ohm (MIDI OUT)      | 1        | MIDI OUT series resistor (Tip to Serial4 TX) |
-| Resistor 10 ohm (MIDI OUT)      | 1        | MIDI OUT source resistor (3.3V to Ring)      |
+| USB-C receptacle (PCB-mount)    | 1        | PC port — data only (audio+MIDI); back panel next to PWR |
+| FE1.1s USB 2.0 hub IC           | 1        | On IO Board; upstream via FFC, 2 downstream to USB-A |
+| 12 MHz crystal                  | 1        | FE1.1s clock source on IO Board, 15 pF load caps |
+| 6N138 optocoupler               | 1        | MIDI IN galvanic isolation on IO Board, 31.25 kbaud |
+| 1N4148 signal diode             | 1        | MIDI IN optocoupler LED protection on IO Board    |
+| TPS2051 power switch             | 2        | USB host port current limiting on IO Board |
+| USB-A dual stacked socket       | 1        | 2× host ports for MIDI controllers on IO Board |
+| 3.5mm TRS jack (MIDI OUT)       | 1        | MIDI OUT Type A on IO Board; top panel |
+| Resistor 33 ohm (MIDI OUT)      | 1        | MIDI OUT series resistor on IO Board |
+| Resistor 10 ohm (MIDI OUT)      | 1        | MIDI OUT source resistor on IO Board |
 
 ### Audio I/O & Analog
 
 | Part                          | Quantity | Notes                                          |
 | ----------------------------- | -------- | ---------------------------------------------- |
 | 1/4" TS panel jacks           | 24       | 16 inputs + 8 outputs                          |
-| 1/4" TRS panel jack           | 1        | Headphone output (stereo), top panel            |
-| Potentiometer (10 kΩ log)     | 1        | Headphone volume, dedicated analog pot, top panel |
+| 1/4" TRS panel jack           | 1        | Headphone output (stereo) on IO Board, top panel |
+| Potentiometer (10 kΩ log)     | 1        | Headphone volume on IO Board, dedicated analog pot, top panel |
 | OPA1678 (dual op-amp, SOIC-8) | 16       | Input buffers (8), anti-alias (8), output (4), reconstruction (4) — estimate, refine in schematic |
 | NJM4580 (alternate)           | 16       | Budget-friendly alternate to OPA1678            |
 | TS5A3159 analog switch (SOT-23-5) | 4    | Pop suppression — 1 per output stereo pair (Main, AUX1-3) |
-| TPA6132A2 headphone amplifier | 1        | Ground-referenced stereo HP driver, 25mW/32Ω   |
+| TPA6132A2 headphone amplifier | 1        | Ground-referenced stereo HP driver on IO Board, 25mW/32Ω |
 
 ### Power Regulation
 
 | Part                           | Quantity | Notes                                    |
 | ------------------------------ | -------- | ---------------------------------------- |
-| ADP7118 LDO                    | 3        | 5V → 3.3V_A ultra-low-noise analog rail; 1 per Input Mother Board (2) + 1 on Main Board (HP amp + virtual ground) |
+| ADP7118 LDO                    | 3        | 5V → 3.3V_A ultra-low-noise analog rail; 1 per Input Mother Board (2) + 1 on Main Board (virtual ground; 5V_A also routes to IO Board HP amp via FFC) |
 | TPS22965 load switch             | 1       | Soft-start / inrush limiting, 5A continuous |
 | 10 mΩ shunt resistor           | 1        | Current measurement test point           |
 
@@ -367,20 +369,26 @@
 
 **Top panel (260 × 84.6 mm — all controls and connectivity):**
 
-Left zone:
-- 1× TFT display (4.3" RA8875, ~93×56 mm visible area): upper left
+Left zone (Main Board):
+- Full-size SD card slot (left of display, slot opens upward)
+- 1× TFT display (4.3" RA8875, ~93×56 mm visible area)
 - 3× rotary encoders (NavX + NavY + Edit): horizontal row below display
 
-Right zone:
-- 16× CHOC key switches (4×4 grid): left portion of right zone, top-aligned with display
-- Right-side 2-wide column: Vol + Power / Phones + PC USB-C / SD card + MIDI HOST / MIDI TH. + MIDI IN
+Center:
+- 16× CHOC key switches (4×4 grid): top-aligned with display
 
-**Back panel (260 × 50 mm — all audio I/O):**
+Right column (IO Board):
+- Vol pot + Power button (top row)
+- Headphone 1/4" TRS jack
+- MIDI HOST dual USB-A (stacked)
+- MIDI IN + MIDI OUT (3.5mm TRS Type A)
+
+**Back panel (260 × 50 mm — all audio I/O + USB-C):**
 
 - 24× 1/4" TS jacks: 12 evenly spaced stereo pairs (L top row, R bottom row), 20 mm center-to-center
 - Order left to right (looking at back): Master, AUX1, AUX2, AUX3, 15/16, 13/14, 11/12, 9/10, 7/8, 5/6, 3/4, 1/2
 - No physical gaps between output and input groups — separation by labeling only
-- PWR USB-C (power only, 5V/5A USB PD): right side of back panel
+- PWR USB-C (power only, 5V/5A USB PD) + PC USB-C (data only, USB Audio + MIDI): right side of back panel, side by side
 
 **No front, left, or right side panels with connectors.** All I/O accessible from top and back.
 

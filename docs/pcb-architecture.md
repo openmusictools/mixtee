@@ -6,9 +6,9 @@
 
 ## Overview
 
-MIXTEE uses a modular multi-board design. The main board sits horizontally under the top panel. Six back-panel boards (three mother+daughter pairs) carry all audio I/O. A key PCB handles the illuminated switch grid.
+MIXTEE uses a modular multi-board design. The main board sits horizontally under the top panel. Six back-panel boards (three mother+daughter pairs) carry all audio I/O. A dedicated IO board handles headphone output, USB MIDI host, and MIDI IN/OUT. A key PCB handles the illuminated switch grid.
 
-Total: **5 unique PCB designs**, 9 physical boards.
+Total: **6 unique PCB designs**, 10 physical boards.
 
 ------
 
@@ -24,26 +24,20 @@ Total: **5 unique PCB designs**, 9 physical boards.
 
 - Teensy 4.1 on socket headers (+ PSRAM soldered to Teensy underside)
 - TCA9548A I2C mux (address 0x70) — isolates codec I2C buses per Input Mother Board via FFC
-- Power management: TPS22965 load switch, polyfuse, ferrite beads, ADP7118 analog LDO (Main Board instance — HP amp + virtual ground)
-- PWR USB-C receptacle (routes to back panel cutout, power only)
-- PC USB-C receptacle (top panel, data only)
-- FE1.1s USB 2.0 hub IC (1 upstream to Teensy USB host, 2 downstream) + 12 MHz crystal
-- Dual stacked USB-A receptacle (MIDI host, top panel)
-- MIDI IN 3.5mm TRS Type A jack + 6N138 optocoupler circuit (top panel)
-- MIDI OUT 3.5mm TRS Type A jack + series/source resistors (top panel)
+- Power management: TPS22965 load switch, polyfuse, ferrite beads, ADP7118 analog LDO (Main Board instance — virtual ground buffer)
+- PWR USB-C receptacle (back panel, power only)
+- PC USB-C receptacle (back panel, next to PWR; data only — USB Audio + MIDI composite device)
 - Power button (momentary, top panel)
 - 3× rotary encoder footprints (top panel, through-hole; NavX + NavY + Edit)
 - TFT display connector (to RA8875 module via ribbon/header)
-- Full-size SD card socket (Molex 472192001, top panel, SDIO routed from Teensy bottom pads 42–47; built-in micro-SD slot unused)
-- Volume pot 10 kΩ log (top panel)
-- TPA6132A2 headphone amplifier IC (ground-referenced stereo output)
-- Headphone 1/4" TRS jack + volume pot → TPA6132A2 (top panel)
+- Full-size SD card socket (Molex 472192001, top panel left zone — left of display; SDIO routed from Teensy bottom pads 42–47; built-in micro-SD slot unused)
 - 4× TS5A3159 analog switch ICs (pop suppression, SOT-23-5, GPIO-controlled)
 - Soft-latch power circuit (74LVC1G00 NAND gate SR latch, SOT-23-5, + RC timeout)
 - 2.5V virtual ground buffer (1× OPA1678 section + precision resistor divider)
+- FFC connector for IO Board (12-pin 1.0 mm ZIF)
 - Bulk caps, decoupling, test points
 
-**Panel-mount components** protrude through top panel cutouts. PWR USB-C protrudes through a back panel cutout.
+**Panel-mount components** protrude through top panel cutouts. PWR USB-C and PC USB-C protrude through back panel cutouts (right side, side by side).
 
 ### Input Mother Board
 
@@ -121,13 +115,37 @@ Both output boards are passive — jacks + ESD only. The output analog stages (r
 - 16× 1N4148 signal diodes (anti-ghosting, cathode toward row)
 - 6-pin JST-PH connector to main board (NeoPixel DIN, I2C SDA, SCL, MCP23017 INT, 5V, GND)
 
+### IO Board
+
+- **Dimensions:** ~50 × 80 mm
+- **Orientation:** Horizontal, under top panel (right side)
+- **Instances:** 1
+
+**Components:**
+
+- TPA6132A2 headphone amplifier IC (ground-referenced stereo output, powered from 5V_A via FFC)
+- Potentiometer 10 kΩ log (headphone volume, top panel)
+- Headphone 1/4" TRS jack (top panel)
+- FE1.1s USB 2.0 hub IC (1 upstream via FFC from Teensy USB host, 2 downstream) + 12 MHz crystal
+- 2× TPS2051 USB host port power switches (500 mA per port)
+- Dual stacked USB-A receptacle (MIDI host, top panel)
+- MIDI IN 3.5mm TRS Type A jack + 6N138 optocoupler circuit (top panel)
+- MIDI OUT 3.5mm TRS Type A jack + series/source resistors (top panel)
+- FFC connector to main board (12-pin 1.0 mm ZIF)
+- Decoupling caps
+
+**Panel-mount components** (headphone jack, volume pot, USB-A, MIDI jacks) protrude through top panel cutouts in the right column.
+
+**Design note:** 2-layer PCB sufficient — only USB Full-Speed (12 Mbps for MIDI host hub), no high-speed digital signals. Headphone analog signals are post-DAC line-level, tolerant of simple routing.
+
 ------
 
 ## Board Summary
 
 | ID | Name | Unique design | Instances | Layers | Active components |
 |----|------|--------------|-----------|--------|-------------------|
-| M | Main Board | Yes | 1 | 4 | Teensy, power mgmt, FE1.1s hub, TPA6132A2 HP amp, TS5A3159 mute, 6N138 MIDI, 74LVC1G00 soft-latch, ADP7118 LDO |
+| M | Main Board | Yes | 1 | 4 | Teensy, power mgmt, TS5A3159 mute, 74LVC1G00 soft-latch, ADP7118 LDO |
+| IO | IO Board | Yes | 1 | 2 | FE1.1s hub, TPA6132A2 HP amp, 6N138 MIDI, 2× TPS2051 |
 | 1-top | Input Mother (TDM1) | Shared w/ 2-top | 1 | 4 | ADP7118 LDO, 2× AK4619VN, 8× input analog, 4× output analog |
 | 2-top | Input Mother (TDM2) | Shared w/ 1-top | 1 | 4 | ADP7118 LDO, 2× AK4619VN, 8× input analog |
 | 1-bot | Input Daughter (TDM1) | Shared w/ all daughters | 1 | 2 | ESD diodes only |
@@ -136,7 +154,7 @@ Both output boards are passive — jacks + ESD only. The output analog stages (r
 | O-bot | Output Bottom | Shared | 1 | 2 | ESD diodes only |
 | K | Key PCB | Yes | 1 | 2 | 16× NeoPixel, 16× CHOC socket, MCP23017 |
 
-**Unique PCB designs:** 5 (Main, Input Mother, Daughter/Output, Key, plus possibly a separate Output Top if connector differs)
+**Unique PCB designs:** 6 (Main, IO, Input Mother, Daughter/Output, Key, plus possibly a separate Output Top if connector differs)
 
 ------
 
@@ -208,6 +226,27 @@ Used between each mother+daughter pair. Short vertical connection (~15 mm stando
 
 **Connector:** 6-pin JST-PH (2.0 mm pitch), ~30–40 mm cable. The MCP23017 on the Key PCB handles the 4×4 key scan matrix over I2C, eliminating the need for individual switch GPIO lines.
 
+### Main Board ↔ IO Board (FFC cable)
+
+| Pin | Signal | Notes |
+|-----|--------|-------|
+| 1 | HP_L (analog) | Headphone left from codec DAC (Board 1-top U1 AOUT) |
+| 2 | HP_R (analog) | Headphone right from codec DAC |
+| 3 | GND (guard) | Shield between analog and digital |
+| 4 | USB_HOST_D+ | FE1.1s upstream, USB Full-Speed 12 Mbps |
+| 5 | USB_HOST_D- | FE1.1s upstream |
+| 6 | GND (USB) | Return for USB differential pair |
+| 7 | MIDI_RX | Serial3 pin 15, 31.25 kbaud |
+| 8 | MIDI_TX | Serial4 pin 17, 31.25 kbaud |
+| 9 | HP_DETECT | GPIO pin 39 |
+| 10 | 5V_DIG | USB hub, MIDI circuits |
+| 11 | 5V_A | Headphone amp clean power |
+| 12 | GND | Main return |
+
+**Connector:** 12-pin 1.0 mm pitch FFC, ZIF socket on each board. Cable length ~30–40 mm (both boards under top panel). Only USB Full-Speed (12 Mbps for MIDI host hub) — no HS signals. Headphone analog lines guarded by adjacent GND pin.
+
+**Why separate IO board:** Simplifies main board layout, shortens panel-mount wiring for right-column connectors, and allows independent revision of the IO section without re-spinning the main board.
+
 ### Main Board ↔ Display
 
 | Signal | Pin |
@@ -232,6 +271,7 @@ Used between each mother+daughter pair. Short vertical connection (~15 mm stando
 |------------|------|-------|------|-------------|
 | Mother ↔ Daughter (×3) | JST-PH wire harness | 2.0 mm | 6 | ~15–20 mm |
 | Main ↔ Input Mother (×2) | FFC + ZIF | 1.0 mm | 16 | ~40–50 mm |
+| Main ↔ IO Board | FFC + ZIF | 1.0 mm | 12 | ~30–40 mm |
 | 1-top → O-top | JST-PH or FFC | 2.0 / 1.0 mm | 10 | ~80 mm |
 | Main ↔ Key PCB | JST-PH | 2.0 mm | 6 | ~30–40 mm |
 | Main ↔ Display | Per module | Varies | 8–10 | ~20 mm |
@@ -243,32 +283,33 @@ Used between each mother+daughter pair. Short vertical connection (~15 mm stando
 Looking at the back panel (260 mm wide × 50 mm tall):
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  O-top   │         1-top          │         2-top          │ [PWR] │
-│  4 jacks │        4 jacks         │        4 jacks         │ USB-C │
-│(Mst,A1-3)│    (L in 1,3,5,7)      │   (L in 9,11,13,15)   │       │
-├──────────┼────────────────────────┼────────────────────────┤       │
-│  O-bot   │         1-bot          │         2-bot          │       │
-│  4 jacks │        4 jacks         │        4 jacks         │       │
-│ (R outs) │    (R in 2,4,6,8)      │   (R in 10,12,14,16)  │       │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│  O-top   │         1-top          │         2-top          │ [PWR] [PC]│
+│  4 jacks │        4 jacks         │        4 jacks         │ USB-C USB-C│
+│(Mst,A1-3)│    (L in 1,3,5,7)      │   (L in 9,11,13,15)   │           │
+├──────────┼────────────────────────┼────────────────────────┤           │
+│  O-bot   │         1-bot          │         2-bot          │           │
+│  4 jacks │        4 jacks         │        4 jacks         │           │
+│ (R outs) │    (R in 2,4,6,8)      │   (R in 10,12,14,16)  │           │
+└─────────────────────────────────────────────────────────────────────────┘
               ← outputs                    inputs →
 ```
 
-PWR USB-C mounts on the main board and protrudes through a cutout on the far right of the back panel, above the jack boards. The three mother+daughter pairs tile across the remaining width.
+Both USB-C receptacles mount on the main board and protrude through cutouts on the far right of the back panel: **PWR** (power only, 5V/5A PD) and **PC** (data only, USB Audio + MIDI composite). Clear panel labeling required to distinguish them. The three mother+daughter pairs tile across the remaining width.
 
 ------
 
 ## Design Reuse Opportunities
 
 1. **Input mother boards (1-top, 2-top):** Same PCB. Codec I2C addresses set by solder jumpers. Output analog section on Board 1-top populated; on Board 2-top left empty.
-2. **All daughter/output boards (1-bot, 2-bot, O-top, O-bot):** Potentially same PCB if connector placement and jack spacing match. All are 4× TS jacks + ESD + one connector. Worth investigating during schematic phase — could reduce unique designs from 5 to 3 (Main, Input Mother, Universal Daughter, Key).
-3. **Key PCB** is standalone with no reuse opportunities.
+2. **All daughter/output boards (1-bot, 2-bot, O-top, O-bot):** Potentially same PCB if connector placement and jack spacing match. All are 4× TS jacks + ESD + one connector. Worth investigating during schematic phase — could reduce unique designs from 6 to 4 (Main, IO, Input Mother, Universal Daughter, Key).
+3. **Key PCB** and **IO Board** are standalone with no reuse opportunities.
 
 ------
 
 ## Mechanical Mounting
 
 - **Main Board:** Screwed to top panel via standoffs (M3 or M2.5). Board hangs below top panel, components protrude through panel cutouts.
+- **IO Board:** Screwed to top panel via standoffs (M3 or M2.5), right side. Panel-mount components (headphone jack, USB-A, MIDI jacks) protrude through top panel cutouts. Connected to main board via 12-pin FFC.
 - **I/O Boards (Mother, Daughter, Output):** Mechanically held by panel-mount jack nuts — the 1/4" TS jacks thread through back panel holes and their nuts clamp the boards to the panel. No additional standoffs needed.
 - **Key PCB:** Mounted to top panel via standoffs or snap-fit clips. CHOC switches protrude through top panel cutouts, keycaps sit flush with panel surface.

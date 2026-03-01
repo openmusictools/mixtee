@@ -289,7 +289,7 @@ PWR USB-C (5V) → TPS22965 → Main Board 5V rail
                                                   AVDD (pin 18) + TVDD (pin 3) on each codec
 ```
 
-Each Input Mother Board has its own ADP7118 LDO, converting the 5V raw supply from FFC pin 9 to a clean 3.3V_A rail for its two codecs. A third ADP7118 on the Main Board provides 3.3V_A for the headphone amplifier and virtual ground buffer. VSS1 and VSS2 connect to a common ground plane — no hard split between analog and digital grounds, per MIXTEE grounding strategy.
+Each Input Mother Board has its own ADP7118 LDO, converting the 5V raw supply from FFC pin 9 to a clean 3.3V_A rail for its two codecs. A third ADP7118 on the Main Board provides 3.3V_A for the virtual ground buffer; this 5V_A rail also routes via Main↔IO FFC pin 11 to the IO Board for the headphone amplifier (TPA6132A2). VSS1 and VSS2 connect to a common ground plane — no hard split between analog and digital grounds, per MIXTEE grounding strategy.
 
 **Critical notes:**
 - AVDRV (pin 5) is the internal 1.2 V LDO output. Do NOT connect to any other device or load — decoupling cap only.

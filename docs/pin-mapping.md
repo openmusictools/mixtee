@@ -69,7 +69,7 @@ Standard SPI0 bus. Display is the only SPI0 device — no shared bus contention.
 | **15** | RX (MIDI data in) | S/PDIF IN, RX3 |
 | (14) | TX (unused, see note) | S/PDIF OUT, TX3 |
 
-MIDI IN is receive-only at 31,250 baud. Pin 15 configured as Serial3 RX.
+MIDI IN is receive-only at 31,250 baud. Pin 15 configured as Serial3 RX. **Routes via Main↔IO FFC pin 7 (MIDI_RX) to 6N138 optocoupler circuit on IO Board.**
 
 **Pin 14 note:** `Serial3.begin(31250)` claims both TX (pin 14) and RX (pin 15). Pin 14 is reclaimed as GPIO in firmware by overriding the IOMUX after Serial3 initialization. Used for RA8875 RESET (see GPIO section).
 
@@ -79,7 +79,7 @@ MIDI IN is receive-only at 31,250 baud. Pin 15 configured as Serial3 RX.
 |-----------|----------|------------|
 | **17** | TX (MIDI data out) | SDA1, TX4 |
 
-MIDI OUT is transmit-only at 31,250 baud. Pin 17 configured as Serial4 TX. Standard MIDI current-loop output via 3.5mm TRS Type A jack. Software handles pass-through of MIDI IN messages and/or Teensy-generated MIDI output.
+MIDI OUT is transmit-only at 31,250 baud. Pin 17 configured as Serial4 TX. **Routes via Main↔IO FFC pin 8 (MIDI_TX) to MIDI OUT circuit on IO Board.** Standard MIDI current-loop output via 3.5mm TRS Type A jack on IO Board. Software handles pass-through of MIDI IN messages and/or Teensy-generated MIDI output.
 
 ### USB Host (Bottom Pads)
 
@@ -90,7 +90,7 @@ MIDI OUT is transmit-only at 31,250 baud. Pin 17 configured as Serial4 TX. Stand
 | D+ | USB data plus |
 | GND | Ground (×2 pads) |
 
-These are dedicated USB2 PHY pads on the bottom of the Teensy 4.1 — not GPIO pins. Connected to the FE1.1s USB hub IC upstream port. Use `USBHost_t36` library for USB MIDI host.
+These are dedicated USB2 PHY pads on the bottom of the Teensy 4.1 — not GPIO pins. **Routes via Main↔IO FFC pins 4–5 (USB_HOST_D+/D-) to FE1.1s USB hub IC upstream port on IO Board.** USB Full-Speed only (12 Mbps for MIDI host). Use `USBHost_t36` library for USB MIDI host.
 
 ### SDIO — External Full-Size SD Card Socket
 
@@ -202,7 +202,7 @@ The 4×4 key matrix (16 keys) is handled entirely by a **MCP23017 I2C GPIO expan
 | **36** | Encoder 2 (NavY) — Push | Input (pull-up) | |
 | **37** | TS5A3159 mute — AUX2 L/R | Output | |
 | **38** | TS5A3159 mute — AUX3 L/R | Output | Also A14 |
-| **39** | Headphone detect | Input (pull-up) | TRS jack switch; also A15 |
+| **39** | Headphone detect | Input (pull-up) | TRS jack switch on IO Board via FFC pin 9; also A15 |
 | **40** | Power button sense | Input (pull-up) | Reads soft-latch button state; also A16 |
 | **41** | KEEP_ALIVE | Output | Holds soft-latch set; release to shut down; also A17 |
 
@@ -311,6 +311,25 @@ With the MCP23017 handling the key matrix on-board, the cable only carries NeoPi
 | 6 | GND | — |
 
 **Connector:** 6-pin JST-PH (2.0mm pitch), ~30–40mm cable.
+
+### Main ↔ IO Board (12-pin 1.0mm FFC)
+
+| FFC Pin | Signal | Teensy Pin | Direction |
+|---------|--------|-----------|-----------|
+| 1 | HP_L (analog) | — | Analog (codec DAC → HP amp) |
+| 2 | HP_R (analog) | — | Analog (codec DAC → HP amp) |
+| 3 | GND (guard) | — | Ground (shield between analog and digital) |
+| 4 | USB_HOST_D+ | USB host pad | Bidirectional (USB FS 12 Mbps) |
+| 5 | USB_HOST_D- | USB host pad | Bidirectional (USB FS 12 Mbps) |
+| 6 | GND (USB) | — | Ground (USB return) |
+| 7 | MIDI_RX | 15 (Serial3 RX) | In (6N138 output → Teensy) |
+| 8 | MIDI_TX | 17 (Serial4 TX) | Out (Teensy → MIDI OUT circuit) |
+| 9 | HP_DETECT | 39 | In (TRS jack switch → Teensy GPIO) |
+| 10 | 5V_DIG | — | Power (USB hub, MIDI circuits) |
+| 11 | 5V_A | — | Power (HP amp clean supply) |
+| 12 | GND | — | Ground (main return) |
+
+**Connector:** 12-pin 1.0mm pitch FFC, ZIF socket on each board. Cable length ~30–40mm (both boards under top panel). Only USB Full-Speed — no HS signals over FFC. Headphone analog lines guarded by adjacent GND pin.
 
 ------
 
