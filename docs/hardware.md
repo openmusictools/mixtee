@@ -91,13 +91,12 @@
 
 **Dual USB-C (separate power and data):**
 
-- **PWR — USB-C (power only, USB PD 5V/5A) — on Power Board (back panel):**
-  - PCB-mount USB-C receptacle (mid-mount or through-hole) on dedicated Power Board
+- **PWR — USB-C (power only, USB PD 5V/5A) — off-the-shelf STUSB4500 breakout (back panel):**
+  - Purchased breakout module (SparkFun Power Delivery Board, STEVAL-ISC005V1, or generic)
   - STUSB4500 USB PD sink controller — negotiates 5V @ 5A from PD-capable supplies
-  - Fallback: 5.1kΩ CC resistors still present for non-PD supplies (defaults to 5V/3A)
-  - VBUS and GND connected; D+/D- not routed — power only
-  - STUSB4500 configured via I2C or NVM to request 5V PDO only (no higher voltages)
-  - 2-pin cable (5V + GND) from Power Board to Main Board TPS22965 input
+  - Fallback: 5.1kΩ CC resistors on module for non-PD supplies (defaults to 5V/3A)
+  - NVM pre-configured to request 5V PDO only (no higher voltages)
+  - 2-pin wire (5V + GND) from module output to Main Board TPS22965 input
   - Labeled "PWR" on back panel (right side)
 - **PC — USB-C (data only) — on Main Board (top panel):**
   - PCB-mount USB-C receptacle on Main Board
@@ -223,7 +222,7 @@
 |-------|--------|---------|-----------|
 | Main Board | **4-layer** | Sig / GND / PWR / Sig | TDM clock integrity (24.576 MHz BCLK), mixed-signal ground plane, power distribution |
 | IO Board | **2-layer** | Sig / GND | USB Full-Speed only (12 Mbps), headphone analog, MIDI — no high-speed digital |
-| Power Board | **2-layer** | Sig / GND | USB-C + PD controller + polyfuse only; thick traces for 5A current |
+| Power Module | Off-the-shelf | — | STUSB4500 USB PD breakout (purchased module, no custom PCB) |
 | Input Mother Board | **4-layer** | Sig / GND / PWR / Sig | AK4619VN codecs + analog input stages + TDM signals need solid ground reference |
 | Input Daughter Board | **2-layer** | Sig / GND | Simple board: jacks + ESD diodes + connector, no high-speed signals |
 | Output Board | **2-layer** | Sig / GND | Simple board: jacks + ESD diodes + connector, no high-speed signals |
@@ -290,8 +289,7 @@
 | Part                            | Quantity | Notes                             |
 | ------------------------------- | -------- | --------------------------------- |
 | TCA9548A I2C mux                | 1        | I2C bus switch on main board; isolates codec boards; address 0x70 |
-| USB-C receptacle (PCB-mount)    | 1        | PWR port — power only; on Power Board (back panel) |
-| STUSB4500 USB PD sink controller | 1       | On Power Board; negotiates 5V/5A; fallback 5V/3A via CC resistors |
+| STUSB4500 breakout module       | 1        | Off-the-shelf (SparkFun PD Board or equiv.); PWR USB-C input; back panel |
 | USB-C receptacle (PCB-mount)    | 1        | PC port — data only (audio+MIDI); on Main Board (top panel) |
 | FE1.1s USB 2.0 hub IC           | 1        | On IO Board; upstream via FFC, 2 downstream to USB-A |
 | 12 MHz crystal                  | 1        | FE1.1s clock source on IO Board, 15 pF load caps |

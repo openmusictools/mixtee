@@ -6,9 +6,9 @@
 
 ## Overview
 
-MIXTEE uses a modular multi-board design. The main board sits horizontally under the top panel. Six back-panel boards (three mother+daughter pairs) carry all audio I/O. A dedicated IO board handles headphone output, USB MIDI host, and MIDI IN/OUT. A key PCB handles the illuminated switch grid. A small Power Board on the back panel carries the PWR USB-C receptacle and USB PD controller.
+MIXTEE uses a modular multi-board design. The main board sits horizontally under the top panel. Six back-panel boards (three mother+daughter pairs) carry all audio I/O. A dedicated IO board handles headphone output, USB MIDI host, and MIDI IN/OUT. A key PCB handles the illuminated switch grid. An off-the-shelf STUSB4500 breakout module on the back panel provides USB PD power input.
 
-Total: **7 unique PCB designs**, 11 physical boards.
+Total: **6 unique PCB designs**, 10 physical boards + 1 off-the-shelf power module.
 
 ------
 
@@ -114,24 +114,23 @@ Both output boards are passive — jacks + ESD only. The output analog stages (r
 - 16× 1N4148 signal diodes (anti-ghosting, cathode toward row)
 - 6-pin JST-PH connector to main board (NeoPixel DIN, I2C SDA, SCL, MCP23017 INT, 5V, GND)
 
-### Power Board
+### Power Module (Off-the-Shelf)
 
-- **Dimensions:** ~30 × 25 mm (minimal footprint)
+- **Type:** STUSB4500 USB PD breakout module (purchased, not custom PCB)
 - **Orientation:** Vertical, mounted to back panel
 - **Instances:** 1
 
-**Components:**
+**Module provides:**
 
-- USB-C receptacle (PCB-mount, power only — VBUS + GND, D+/D- not routed)
+- USB-C receptacle (power only — VBUS + GND, D+/D- not routed)
 - STUSB4500 USB PD sink controller (negotiates 5V/5A; fallback 5V/3A via CC resistors)
-- 5.1kΩ CC resistors (USB PD fallback)
-- Input polyfuse (2.5A hold / 5A trip)
-- Decoupling caps
-- 2-pin power cable connector (5V + GND to Main Board)
+- On-board decoupling and protection
 
-**Panel-mount:** USB-C receptacle protrudes through a back panel cutout (right side). Labeled "PWR" on back panel.
+**Panel-mount:** USB-C receptacle protrudes through a back panel cutout (right side). Labeled "PWR" on back panel. Module secured by USB-C panel-mount nut or adhesive standoff.
 
-**Design note:** Separating the PWR USB-C onto its own small board simplifies Main Board layout and allows the power input to be physically close to the back panel without routing thick power traces across the full main board width. The 2-pin cable carries 5V/GND to the Main Board's TPS22965 load switch input.
+**Integration:** 2-pin wire (5V + GND) from module screw terminal / solder pads to Main Board TPS22965 load switch input. NVM pre-configured for 5V PDO only.
+
+**Recommended modules:** SparkFun Power Delivery Board (USB-C, Qwiic), STEVAL-ISC005V1 (ST eval board), or generic STUSB4500 breakout.
 
 ### IO Board
 
@@ -164,7 +163,7 @@ Both output boards are passive — jacks + ESD only. The output analog stages (r
 |----|------|--------------|-----------|--------|-------------------|
 | M | Main Board | Yes | 1 | 4 | Teensy, power mgmt, TS5A3159 mute, 74LVC1G00 soft-latch, ADP7118 LDO |
 | IO | IO Board | Yes | 1 | 2 | FE1.1s hub, TPA6132A2 HP amp, 6N138 MIDI, 2× TPS2051 |
-| P | Power Board | Yes | 1 | 2 | STUSB4500 USB PD sink, polyfuse |
+| P | Power Module | Off-the-shelf | 1 | — | STUSB4500 USB PD breakout (purchased) |
 | 1-top | Input Mother (TDM1) | Shared w/ 2-top | 1 | 4 | ADP7118 LDO, 2× AK4619VN, 8× input analog, 4× output analog |
 | 2-top | Input Mother (TDM2) | Shared w/ 1-top | 1 | 4 | ADP7118 LDO, 2× AK4619VN, 8× input analog |
 | 1-bot | Input Daughter (TDM1) | Shared w/ all daughters | 1 | 2 | ESD diodes only |
@@ -173,7 +172,7 @@ Both output boards are passive — jacks + ESD only. The output analog stages (r
 | O-bot | Output Bottom | Shared | 1 | 2 | ESD diodes only |
 | K | Key PCB | Yes | 1 | 2 | 16× NeoPixel, 16× CHOC socket, MCP23017 |
 
-**Unique PCB designs:** 7 (Main, IO, Power, Input Mother, Daughter/Output, Key, plus possibly a separate Output Top if connector differs)
+**Unique PCB designs:** 6 (Main, IO, Input Mother, Daughter/Output, Key, plus possibly a separate Output Top if connector differs) + 1 off-the-shelf power module
 
 ------
 
@@ -332,7 +331,7 @@ The PWR USB-C receptacle mounts on the **Power Board** — a small dedicated PCB
 
 1. **Input mother boards (1-top, 2-top):** Same PCB. Codec I2C addresses set by solder jumpers. Output analog section on Board 1-top populated; on Board 2-top left empty.
 2. **All daughter/output boards (1-bot, 2-bot, O-top, O-bot):** Potentially same PCB if connector placement and jack spacing match. All are 4× TS jacks + ESD + one connector. Worth investigating during schematic phase — could reduce unique designs from 6 to 4 (Main, IO, Input Mother, Universal Daughter, Key).
-3. **Key PCB**, **IO Board**, and **Power Board** are standalone with no reuse opportunities.
+3. **Key PCB** and **IO Board** are standalone custom designs with no reuse opportunities. The **Power Module** is an off-the-shelf STUSB4500 breakout (no custom PCB).
 
 ------
 
@@ -341,5 +340,5 @@ The PWR USB-C receptacle mounts on the **Power Board** — a small dedicated PCB
 - **Main Board:** Screwed to top panel via standoffs (M3 or M2.5). Board hangs below top panel, components protrude through panel cutouts.
 - **IO Board:** Screwed to top panel via standoffs (M3 or M2.5), right side. Panel-mount components (headphone jack, USB-A, MIDI jacks) protrude through top panel cutouts. Connected to main board via 12-pin FFC.
 - **I/O Boards (Mother, Daughter, Output):** Mechanically held by panel-mount jack nuts — the 1/4" TS jacks thread through back panel holes and their nuts clamp the boards to the panel. No additional standoffs needed.
-- **Power Board:** Mechanically held by the panel-mount USB-C jack nut (same approach as audio jack boards). Small board, single connector — no additional standoffs needed.
+- **Power Module:** Off-the-shelf STUSB4500 breakout, secured to back panel by USB-C jack nut or adhesive standoff.
 - **Key PCB:** Mounted to top panel via standoffs or snap-fit clips. CHOC switches protrude through top panel cutouts, keycaps sit flush with panel surface.

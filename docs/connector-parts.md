@@ -16,7 +16,7 @@ Every connector needs an exact manufacturer part number (MPN) for KiCad footprin
 
 | Connector | MPN | Manufacturer | Package | Board | Notes |
 |-----------|-----|-------------|---------|-------|-------|
-| USB-C receptacle (PWR) | USB4105-GF-A | GCT | Mid-mount SMD | Power Board | Power only, no data lines routed; 5V/5A USB PD via STUSB4500; back panel |
+| USB-C receptacle (PWR) | — (on breakout module) | — | Module-included | Power Module (off-the-shelf) | Power only; STUSB4500 breakout handles USB PD; back panel |
 | USB-C receptacle (PC) | USB4105-GF-A | GCT | Mid-mount SMD | Main Board | Data only (D+/D- to Teensy USB device); top panel; same part for BOM consolidation |
 | USB-A dual stacked | 67298-4090 | Amphenol | Through-hole | IO Board | 2× USB-A host ports for MIDI controllers; top panel |
 
