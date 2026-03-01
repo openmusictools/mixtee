@@ -8,10 +8,11 @@
 
 ### On-Device Controls
 
-**2× Rotary Encoders with Push:**
+**3× Rotary Encoders with Push:**
 
-- **Nav Encoder (left):** Navigate laterally within current depth; push = drill down one level
-- **Edit Encoder (right):** Adjust default parameter of focused element; push = drill into focused element
+- **NavX Encoder (left, below display):** Horizontal navigation — scroll laterally within current depth; push = drill down one level
+- **NavY Encoder (center, below display):** Vertical navigation — scroll between pages/rows; push = context action
+- **Edit Encoder (right, below display):** Adjust value of focused parameter; push = confirm / drill into focused element
 
 **16× Mechanical Key Switches (custom PCB, CHOC hotswap, 4×4 grid):**
 
@@ -20,7 +21,7 @@
   - Row 1 (channel controls): Mute, Solo, Rec, (assignable)
   - Row 2: (assignable), (assignable), (assignable), (assignable)
   - Row 3: (assignable), (assignable), (assignable), (assignable)
-  - Row 4 (navigation): Home, Back, Shift, (assignable)
+  - Row 4 (navigation): Home, Back, Page, Shift
 - **Mute/Solo/Rec:** Depth-independent — always act on the currently selected channel regardless of navigation depth
 - **Home:** Hard reset to Overview (clears navigation stack, returns to top-level overview)
 - **Back:** Navigate up one level in the hierarchy
@@ -133,6 +134,13 @@ See [usb-audio.md](usb-audio.md) for optional multitrack upgrade paths (UAC2, XM
 - Self-powered hub architecture (500 mA per port)
 - Accepts standard MIDI controllers (Akai MIDImix, Korg nanoKONTROL Studio, Launch Control XL, etc.)
 - Users map their controllers to the mixer's CC spec
+
+### MIDI IN / OUT
+
+- **MIDI IN:** 3.5mm TRS Type A input with 6N138 optocoupler isolation (Serial3 RX, pin 15)
+- **MIDI OUT:** 3.5mm TRS Type A output (Serial4 TX, pin 17) — standard MIDI current-loop at 31.25 kbaud
+- Software MIDI THRU: incoming MIDI IN messages can be forwarded to MIDI OUT (configurable)
+- Teensy-generated MIDI: firmware can send CC/note messages out MIDI OUT (e.g., parameter feedback, sync)
 
 ### MIDI CC Map (Per-Channel-Group)
 

@@ -142,8 +142,8 @@ MIXTEE uses **TDM128 mode** (Mode 8 in Table 2 of the datasheet):
 
 | TDM Bus | SAI | Codecs | FFC Cable | Teensy Pins |
 |---------|-----|--------|-----------|-------------|
-| TDM1 | SAI1 | U1 + U2 | FFC to Board 1-top | MCLK=23, BCLK=21, LRCLK=20, TX=7, RX=8 |
-| TDM2 | SAI2 | U3 + U4 | FFC to Board 2-top | MCLK=33, BCLK=4, LRCLK=3, TX=2, RX=5 |
+| TDM1 | SAI1 | U1 + U2 | FFC to Board 1-top | MCLK=23, BCLK=21, LRCLK=20, TX=7, RX0=8 (U1), RX1=32 (U2) |
+| TDM2 | SAI2 | U3 + U4 | FFC to Board 2-top | MCLK=33, BCLK=4, LRCLK=3, TX=2, RX0=5 (U3), RX1=34 (U4) |
 
 ### Clock Distribution
 
@@ -156,23 +156,20 @@ Teensy SAI1/SAI2
 
 Both codecs on each Input Mother Board share the same MCLK, BICK, and LRCK lines from the FFC cable. The Teensy is the clock master; all codecs are slaves.
 
-### **DESIGN INVESTIGATION: Multi-codec TDM bus sharing**
+### Separate SDOUT Lines (Resolved)
 
-**Problem:** The AK4619VN always transmits ADC data in TDM slots 0–3. Two codecs on the same SDOUT line would have bus contention — both drive slots 0–3 simultaneously.
+**Problem (resolved):** The AK4619VN always transmits ADC data in TDM slots 0–3. Two codecs on the same SDOUT line would have bus contention.
 
-The existing hardware.md assumes U1 uses slots 0–3 and U2 uses slots 4–7, but the AK4619VN has no slot-offset register. This needs resolution during Phase 1 breadboard bring-up.
+**Solution:** Each codec gets its own SDOUT → SAI RX data pin. The iMXRT1062 SAI peripherals support multiple RX data lines (RX_DATA0 + RX_DATA1). This requires a PJRC Audio Library modification to enable SAI multi-data-line receive (SAI1_RCR3 / SAI2_RCR3 registers).
 
-**Possible approaches:**
+| Bus | Codec | SDOUT → FFC Pin | Teensy Pin | SAI Function |
+|-----|-------|----------------|------------|-------------|
+| SAI1 | U1 | FFC pin 4 | **8** | SAI1_RX_DATA0 |
+| SAI1 | U2 | FFC pin 13 | **32** | SAI1_RX_DATA1 |
+| SAI2 | U3 | FFC pin 4 | **5** | SAI2_RX_DATA0 |
+| SAI2 | U4 | FFC pin 13 | **34** (bottom pad) | SAI2_RX_DATA1 |
 
-1. **Separate SDOUT lines** — Give each codec its own data line to a separate SAI RX data pin. SAI1 on the iMXRT1062 supports up to 4 RX data lines. Pin 8 is RX_DATA0; additional data pins may be available (requires PJRC Audio Library modification).
-
-2. **I2S stereo mode instead of TDM** — Run each codec in stereo I2S mode (2 channels per SDOUT). U1 SDOUT1 carries ch1–2, U1 SDOUT2 carries ch3–4, U2 similarly. Requires 4 SAI data pins per bus — may exceed available pin count.
-
-3. **Time-division with PDN gating** — Activate one codec at a time during different frame slots by toggling PDN. Adds complexity and latency — not recommended.
-
-4. **Accept 4-channel limitation** — Use one codec per TDM bus (4 buses total). Would require 4 SAI peripherals — Teensy 4.1 only has 2.
-
-**Recommended Phase 1 approach:** Start with a single codec per SAI bus to validate basic TDM operation, then investigate approach (1) for the full 16-channel design.
+Both codecs on a bus still share the same clock lines (MCLK, BCLK, LRCLK) and the same TX data line (SDIN1). Each codec independently drives TDM slots 0–3 on its own SDOUT line — no bus contention. The Teensy receives 4 channels per data line, 8 channels total per SAI bus.
 
 ------
 
@@ -231,7 +228,7 @@ Identical to U1 except:
 | DAC1 R (pin 23) | Main R | **AUX2 R** |
 | DAC2 L (pin 24) | AUX1 L | **AUX3 L** |
 | DAC2 R (pin 25) | AUX1 R | **AUX3 R** |
-| SDOUT1 (pin 31) | FFC pin 4 (shared with U1 — see investigation) | Same FFC pin 4 |
+| SDOUT1 (pin 31) | FFC pin 13 → Teensy pin 32 | **SAI1_RX_DATA1** (separate from U1) |
 
 All other pins (power, clocks, I2C, unused inputs) are wired identically to U1.
 
@@ -246,7 +243,7 @@ Same physical wiring pattern as U1, with these differences:
 | BICK (pin 7) | Teensy pin 21 | Teensy pin **4** |
 | LRCK (pin 6) | Teensy pin 20 | Teensy pin **3** |
 | SDIN1 (pin 1) | Teensy pin 7 | Teensy pin **2** |
-| SDOUT1 (pin 31) | Teensy pin 8 | Teensy pin **5** |
+| SDOUT1 (pin 31) | FFC pin 4 → Teensy pin 8 (SAI1_RX_DATA0) | FFC pin 4 → Teensy pin **5** (SAI2_RX_DATA0) |
 | CAD (pin 27) | VSS2 → 0x10 | VSS2 → **0x10** (same address, isolated via TCA9548A Ch 1) |
 | ADC inputs | Ch 1–4 | **Ch 9–12** |
 | DAC outputs (pins 22–25) | Used (Main + AUX1) | **Unused — leave open** |
@@ -258,6 +255,7 @@ Same as U3 except:
 | Difference | U3 | U4 |
 |-----------|----|----|
 | CAD (pin 27) | VSS2 → 0x10 | TVDD → **0x11** |
+| SDOUT1 (pin 31) | FFC pin 4 → Teensy pin 5 (SAI2_RX_DATA0) | FFC pin 13 → Teensy pin **34** (**SAI2_RX_DATA1**, bottom pad) |
 | ADC inputs | Ch 9–12 | **Ch 13–16** |
 | DAC outputs | Unused | **Unused — leave open** |
 
@@ -282,12 +280,16 @@ Each AK4619VN codec requires the following power connections:
 **Power architecture relationship:**
 
 ```
-PWR USB-C (5V) → TPS22965 → ferrite bead → ADP7118 LDO → 3.3V_A
-                                                              ↓
-                                              AVDD (pin 18) + TVDD (pin 3) on each codec
+PWR USB-C (5V) → TPS22965 → Main Board 5V rail
+                                    ↓
+                            FFC pin 9 (5V raw)
+                                    ↓
+                    ADP7118 LDO (on each Input Mother Board) → 3.3V_A
+                                                                  ↓
+                                                  AVDD (pin 18) + TVDD (pin 3) on each codec
 ```
 
-Both AVDD and TVDD connect to the same clean 3.3 V_A rail from the ADP7118 LDO on the Input Mother Board. VSS1 and VSS2 connect to a common ground plane — no hard split between analog and digital grounds, per MIXTEE grounding strategy.
+Each Input Mother Board has its own ADP7118 LDO, converting the 5V raw supply from FFC pin 9 to a clean 3.3V_A rail for its two codecs. A third ADP7118 on the Main Board provides 3.3V_A for the headphone amplifier and virtual ground buffer. VSS1 and VSS2 connect to a common ground plane — no hard split between analog and digital grounds, per MIXTEE grounding strategy.
 
 **Critical notes:**
 - AVDRV (pin 5) is the internal 1.2 V LDO output. Do NOT connect to any other device or load — decoupling cap only.
@@ -436,9 +438,9 @@ The following items require validation during Phase 1 breadboard bring-up:
 
 ### 1. TDM Multi-Codec Bus Sharing
 
-**Status:** Open — blocking for full 16-channel design.
+**Status:** Resolved — separate SDOUT lines per codec.
 
-The AK4619VN always transmits on TDM slots 0–3. Two codecs sharing one SDOUT line will have bus contention. Investigate whether SAI1/SAI2 on the iMXRT1062 can accept multiple RX data pins (RX_DATA0 + RX_DATA1) to give each codec its own data line. This may require modifications to the PJRC Audio Library TDM driver.
+Each codec gets its own SDOUT → SAI RX data pin (U1→pin 8 RX_DATA0, U2→pin 32 RX_DATA1, U3→pin 5 RX_DATA0, U4→pin 34 RX_DATA1). Requires PJRC Audio Library modification to enable SAI multi-data-line receive (SAI_RCR3 register). FFC pin 13 carries the second codec's SDOUT on each cable. See "Separate SDOUT Lines" section above and pin-mapping.md for full details.
 
 ### 2. Clock Compatibility with PJRC TDM Library
 

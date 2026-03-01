@@ -8,7 +8,7 @@ All 24 audio jacks (12 stereo pairs) on the back panel, evenly spaced in 2 rows 
 
 ### Jack order (left to right, looking at back)
 
-1. AUX1, 2. AUX2, 3. AUX3, 4. Master, 5. 15/16, 6. 13/14, 7. 11/12, 8. 9/10, 9. 7/8, 10. 5/6, 11. 3/4, 12. 1/2
+1. Master, 2. AUX1, 3. AUX2, 4. AUX3, 5. 15/16, 6. 13/14, 7. 11/12, 8. 9/10, 9. 7/8, 10. 5/6, 11. 3/4, 12. 1/2
 
 Jack centers at x = 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240 mm from left panel edge.
 
@@ -21,23 +21,22 @@ Jack centers at x = 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240 mm fr
 
 ### Width conclusion
 
-Enclosure: **260 × 84.6 × 50 mm** (W × D × H).
+Enclosure: **260 × 100 × 50 mm** (W × D × H).
 
 ## Top Panel
 
 Dimensions: **260 mm** wide × **84.6 mm** deep (front to back). Outputs moved to back panel — top panel is now entirely controls.
 
-### Left zone — Display + Controls
+### Left zone — Display + Encoders
 
-Left zone splits into two columns: encoders on the far left, display to their right.
-
-**Encoder section** (far left strip):
-- Nav encoder (top)
-- Edit encoder (below Nav)
-- Stacked vertically as a pair
-
-**Display** (to the right of encoders):
+**Display** (upper left):
 - TFT 93 × 56 mm visible area
+
+**Encoder section** (below display, horizontal row):
+- NavX encoder (left) — horizontal navigation
+- NavY encoder (center) — vertical navigation
+- Edit encoder (right) — value editing
+- Arranged in a horizontal row beneath the display
 
 ### Right zone — Keys + Monitoring + Connectivity
 
@@ -45,19 +44,15 @@ Left zone splits into two columns: encoders on the far left, display to their ri
 - Row 1 (channel controls): Mute, Solo, Rec, (assignable)
 - Row 2: (assignable), (assignable), (assignable), (assignable)
 - Row 3: (assignable), (assignable), (assignable), (assignable)
-- Row 4 (navigation): Home, Back, Shift, (assignable)
+- Row 4 (navigation): Home, Back, Page, Shift
+
 - Custom PCB with CHOC hotswap sockets + WS2812B-2020 per key + MCP23017 I2C GPIO expander + 100nF decoupling caps
 
-**SD / Vol / Phones column** (to the right of keys, vertical stack):
-- Full-size SD card slot (aligned with key row 1, breakout from Teensy 4.1 SDIO lines)
-- Volume pot (aligned with key row 2)
-- Headphone 1/4″ TRS jack (aligned with key row 3)
-
-**Top-right corner** (connectivity + controls):
-- Power button (soft, momentary push, triggers TPS22965 load switch latch)
-- PC — USB-C (data only: USB Audio 2-in/2-out + USB MIDI composite device)
-- MIDI HOST — Dual USB-A (stacked, Pi-style double port)
-- MIDI IN (3.5mm TRS Type A — ~6.5mm panel hole, much smaller than legacy 5-pin DIN)
+**Right-side column** (to the right of keys, 2-wide vertical stack):
+- Vol pot + Power button (top row)
+- Headphone 1/4″ TRS jack + PC USB-C (data only: USB Audio 2-in/2-out + USB MIDI composite device)
+- Full-size SD card slot (breakout from Teensy 4.1 SDIO lines) + MIDI HOST dual USB-A (stacked)
+- MIDI TH. (3.5mm TRS Type A — MIDI OUT/THRU) + MIDI IN (3.5mm TRS Type A)
 
 Power-on: press button → load switch latches on → Teensy boots.
 Power-off: press button → firmware saves state to SD → load switch releases.

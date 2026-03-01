@@ -2,7 +2,7 @@
 
 **Open-source 16-input / 8-output digital mixer with MIDI control and 16-track recording.**
 
-Built around the Teensy 4.1, MIXTEE is a compact desktop mixer designed for electronic musicians, synth enthusiasts, and DIY audio builders. It handles mixing, monitoring, MIDI control, multitrack recording to SD card, and 2-in/2-out USB audio — all in a 260 × 84.6 × 50 mm enclosure.
+Built around the Teensy 4.1, MIXTEE is a compact desktop mixer designed for electronic musicians, synth enthusiasts, and DIY audio builders. It handles mixing, monitoring, MIDI control, multitrack recording to SD card, and 2-in/2-out USB audio — all in a 260 × 100 × 50 mm enclosure.
 
 ![MIXTEE Layout](hardware/mixtee-layout.jpg)
 
@@ -12,9 +12,9 @@ Built around the Teensy 4.1, MIXTEE is a compact desktop mixer designed for elec
 - **8 outputs** (master stereo + 3 aux/FX sends)
 - **16-track recording** direct to SD card (48 kHz / 24-bit WAV, 8 MB PSRAM buffer)
 - **USB audio interface** (2-in / 2-out, USB Audio Class 1)
-- **MIDI control** via 2× USB host ports + 5-pin DIN input
-- **4.3" TFT display** with dedicated nav/edit encoders and 16 illuminated CHOC keys
-- **Compact form factor** — 260 × 84.6 × 50 mm, all controls on top, all audio on back
+- **MIDI control** via 2× USB host ports + TRS MIDI in/out
+- **4.3" TFT display** with 3 dedicated encoders (NavX, NavY, Edit) and 16 illuminated CHOC keys
+- **Compact form factor** — 260 × 100 × 50 mm, all controls on top, all audio on back
 
 ## Architecture
 
@@ -35,12 +35,20 @@ mixtee/
 │   ├── usb-audio.md    ← USB audio details + optional multitrack upgrade paths
 │   ├── pcb-architecture.md ← board definitions, interconnects, connectors
 │   ├── pin-mapping.md  ← Teensy 4.1 pin assignments, GPIO budget, FFC pinouts
-│   └── ak4619-wiring.md ← AK4619VN codec pin table, I2C, TDM, power, registers
+│   ├── ak4619-wiring.md ← AK4619VN codec pin table, I2C, TDM, power, registers
+│   ├── connector-parts.md ← connector MPNs and KiCad footprint status
+│   └── pcb-design-rules.md ← trace widths, clearances, via sizes, manufacturing
 ├── hardware/           ← schematics, PCB, mechanical, BOM
 │   ├── bom.csv         ← bill of materials
 │   ├── mixtee-layout.svg    ← panel layout drawing (editable)
 │   ├── mixtee-layout.jpg    ← panel layout render
 │   ├── mixtee-layout.afdesign  ← Affinity Designer source
+│   ├── kicad/               ← KiCad 9 project files
+│   │   ├── mixtee-main/          ← Main Board (4-layer, hierarchical)
+│   │   ├── mixtee-input-mother/  ← Input Mother Board (4-layer)
+│   │   ├── mixtee-daughter-output/ ← Daughter/Output Board (2-layer)
+│   │   ├── mixtee-key/           ← Key PCB (2-layer)
+│   │   └── lib/                  ← Custom symbols, footprints, 3D models
 │   └── reference/      ← reference materials
 └── firmware/           ← Teensy 4.1 firmware (coming in Phase 1)
 ```
@@ -58,6 +66,8 @@ mixtee/
 | [PCB Architecture](docs/pcb-architecture.md) | Board definitions, interconnects, connector plan |
 | [Pin Mapping](docs/pin-mapping.md) | Teensy 4.1 pin assignments, GPIO budget, FFC cable pinouts |
 | [AK4619VN Wiring](docs/ak4619-wiring.md) | Codec pin table, I2C addressing, TDM interface, power, registers |
+| [Connector Parts](docs/connector-parts.md) | Connector MPNs, manufacturers, KiCad footprint status |
+| [PCB Design Rules](docs/pcb-design-rules.md) | Trace widths, clearances, via sizes, stackup, manufacturing rules |
 
 ## Status
 
@@ -65,6 +75,6 @@ mixtee/
 
 ## License
 
-MIXTEE is fully open source. Hardware is licensed under CERN-OHL-P v2, firmware under MIT, and documentation under CC BY 4.0. See [LICENSE](LICENSE) for details.
+MIXTEE is fully open source. Hardware is licensed under CERN-OHL-P v2 (permissive), firmware under MIT, and documentation under CC BY 4.0. See [LICENSE](LICENSE) for details.
 
 **Author:** Juliusz Fedyk — [openmusictools.com](https://openmusictools.com)

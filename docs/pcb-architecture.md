@@ -16,7 +16,7 @@ Total: **5 unique PCB designs**, 9 physical boards.
 
 ### Main Board
 
-- **Dimensions:** ~260 × 84.6 mm (matches top panel)
+- **Dimensions:** ~260 × 85 mm (matches top panel)
 - **Orientation:** Horizontal, under top panel
 - **Instances:** 1
 
@@ -24,21 +24,22 @@ Total: **5 unique PCB designs**, 9 physical boards.
 
 - Teensy 4.1 on socket headers (+ PSRAM soldered to Teensy underside)
 - TCA9548A I2C mux (address 0x70) — isolates codec I2C buses per Input Mother Board via FFC
-- Power management: TPS22965 load switch, polyfuse, ferrite beads, ADP7118 analog LDO
+- Power management: TPS22965 load switch, polyfuse, ferrite beads, ADP7118 analog LDO (Main Board instance — HP amp + virtual ground)
 - PWR USB-C receptacle (routes to back panel cutout, power only)
 - PC USB-C receptacle (top panel, data only)
 - FE1.1s USB 2.0 hub IC (1 upstream to Teensy USB host, 2 downstream) + 12 MHz crystal
 - Dual stacked USB-A receptacle (MIDI host, top panel)
 - MIDI IN 3.5mm TRS Type A jack + 6N138 optocoupler circuit (top panel)
+- MIDI OUT 3.5mm TRS Type A jack + series/source resistors (top panel)
 - Power button (momentary, top panel)
-- 2× rotary encoder footprints (top panel, through-hole)
+- 3× rotary encoder footprints (top panel, through-hole; NavX + NavY + Edit)
 - TFT display connector (to RA8875 module via ribbon/header)
-- Full-size SD card slot (top panel, breakout from Teensy SDIO)
+- Full-size SD card socket (Molex 472192001, top panel, SDIO routed from Teensy bottom pads 42–47; built-in micro-SD slot unused)
 - Volume pot 10 kΩ log (top panel)
 - TPA6132A2 headphone amplifier IC (ground-referenced stereo output)
 - Headphone 1/4" TRS jack + volume pot → TPA6132A2 (top panel)
-- 4× DG419 or TS5A3159 analog switch ICs (pop suppression, GPIO-controlled)
-- Soft-latch power circuit (SR latch from 2× BSS138 or 74LVC1G00 NAND + RC timeout)
+- 4× TS5A3159 analog switch ICs (pop suppression, SOT-23-5, GPIO-controlled)
+- Soft-latch power circuit (74LVC1G00 NAND gate SR latch, SOT-23-5, + RC timeout)
 - 2.5V virtual ground buffer (1× OPA1678 section + precision resistor divider)
 - Bulk caps, decoupling, test points
 
@@ -52,6 +53,7 @@ Total: **5 unique PCB designs**, 9 physical boards.
 
 **Components:**
 
+- ADP7118 LDO (5V → 3.3V_A, per-board analog power supply)
 - 4× 1/4" TS jacks (L channels — odd numbered: 1,3,5,7 or 9,11,13,15)
 - 2× AK4619VN codec (4-in/4-out each, 8 ADC channels total per board)
 - 8× input buffer op-amps (OPA1678)
@@ -89,7 +91,7 @@ Analog signals route up through the board-to-board connector to the codec on the
 
 **Components (O-top):**
 
-- 4× 1/4" TS jacks (L outputs: AUX1, AUX2, AUX3, Master)
+- 4× 1/4" TS jacks (L outputs: Master, AUX1, AUX2, AUX3)
 - 4× ESD clamp diodes
 - Vertical board-to-board connector (to O-bot below)
 - Cable connector (receives line-level signals from Board 1-top)
@@ -125,9 +127,9 @@ Both output boards are passive — jacks + ESD only. The output analog stages (r
 
 | ID | Name | Unique design | Instances | Layers | Active components |
 |----|------|--------------|-----------|--------|-------------------|
-| M | Main Board | Yes | 1 | 4 | Teensy, power mgmt, FE1.1s hub, TPA6132A2 HP amp, DG419 mute, 6N138 MIDI, soft-latch |
-| 1-top | Input Mother (TDM1) | Shared w/ 2-top | 1 | 4 | 2× AK4619VN, 8× input analog, 4× output analog |
-| 2-top | Input Mother (TDM2) | Shared w/ 1-top | 1 | 4 | 2× AK4619VN, 8× input analog |
+| M | Main Board | Yes | 1 | 4 | Teensy, power mgmt, FE1.1s hub, TPA6132A2 HP amp, TS5A3159 mute, 6N138 MIDI, 74LVC1G00 soft-latch, ADP7118 LDO |
+| 1-top | Input Mother (TDM1) | Shared w/ 2-top | 1 | 4 | ADP7118 LDO, 2× AK4619VN, 8× input analog, 4× output analog |
+| 2-top | Input Mother (TDM2) | Shared w/ 1-top | 1 | 4 | ADP7118 LDO, 2× AK4619VN, 8× input analog |
 | 1-bot | Input Daughter (TDM1) | Shared w/ all daughters | 1 | 2 | ESD diodes only |
 | 2-bot | Input Daughter (TDM2) | Shared | 1 | 2 | ESD diodes only |
 | O-top | Output Top | Shared (or near-identical) | 1 | 2 | ESD diodes only |
@@ -159,18 +161,19 @@ Used between each mother+daughter pair. Short vertical connection (~15 mm stando
 | Main ↔ 1-top | MCLK | 1 |
 | | TDM1 BCLK | 2 |
 | | TDM1 LRCLK | 3 |
-| | TDM1 DATA IN (codec → Teensy) | 4 |
-| | TDM1 DATA OUT (Teensy → codec) | 5 |
+| | TDM DATA IN — Codec 1 SDOUT (codec → Teensy RX_DATA0) | 4 |
+| | TDM DATA OUT (Teensy → codec SDIN1) | 5 |
 | | I2C SDA | 6 |
 | | I2C SCL | 7 |
 | | 5V_DIG | 8 |
-| | 5V_A (pre-LDO or post, TBD) | 9 |
+| | 5V (raw, LDO input on codec board) | 9 |
 | | GND | 10–12 |
-| | (spare) | 13–16 |
+| | TDM DATA IN — Codec 2 SDOUT (codec → Teensy RX_DATA1) | 13 |
+| | (spare) | 14–16 |
 
-**Same pinout for Main ↔ 2-top**, substituting TDM2 signals. MCLK shared (active on both cables from Teensy).
+**Same pinout for Main ↔ 2-top**, substituting TDM2 signals. MCLK shared (active on both cables from Teensy). Each codec gets its own SDOUT line to a separate SAI RX data pin, avoiding TDM bus contention.
 
-**Connector:** 16-pin 1.0 mm pitch FFC, ZIF socket on each board. Cable length ~40–50 mm (top panel to back panel within the 84.6 mm enclosure depth). Spare pins available for codec reset, interrupt, or future signals.
+**Connector:** 16-pin 1.0 mm pitch FFC, ZIF socket on each board. Cable length ~50–60 mm (top panel to back panel within the 100 mm enclosure depth). Spare pins available for codec reset, interrupt, or future signals.
 
 **Why FFC:** Flat, low-profile, consistent impedance for TDM clocks at 24.576 MHz, easy to route inside a compact enclosure. No crimping tools needed — pre-made cables available in standard lengths.
 
@@ -243,7 +246,7 @@ Looking at the back panel (260 mm wide × 50 mm tall):
 ┌─────────────────────────────────────────────────────────────────────┐
 │  O-top   │         1-top          │         2-top          │ [PWR] │
 │  4 jacks │        4 jacks         │        4 jacks         │ USB-C │
-│ (L outs) │    (L in 1,3,5,7)      │   (L in 9,11,13,15)   │       │
+│(Mst,A1-3)│    (L in 1,3,5,7)      │   (L in 9,11,13,15)   │       │
 ├──────────┼────────────────────────┼────────────────────────┤       │
 │  O-bot   │         1-bot          │         2-bot          │       │
 │  4 jacks │        4 jacks         │        4 jacks         │       │
