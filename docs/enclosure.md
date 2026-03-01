@@ -6,6 +6,8 @@ All 24 audio jacks (12 stereo pairs) on the back panel, evenly spaced in 2 rows 
 
 **PWR — USB-C (power only, USB PD):** Located on the back panel (right side, looking at back), on a dedicated **Power Board**. 5V/5A via USB PD (fallback 5V/3A), no data lines. Plug-and-forget connection to PD-capable power supply. 2-pin cable carries 5V + GND to Main Board.
 
+**POWER button (momentary):** Off-the-shelf screw-collar panel-mount push button, located next to PWR USB-C on the back panel. Wired to Main Board soft-latch circuit (pins 40/41). Press to power on; press to cleanly shut down; long-press (>4s) for hardware failsafe power-off.
+
 ### Jack order (left to right, looking at back)
 
 1. Master, 2. AUX1, 3. AUX2, 4. AUX3, 5. 15/16, 6. 13/14, 7. 11/12, 8. 9/10, 9. 7/8, 10. 5/6, 11. 3/4, 12. 1/2
@@ -57,17 +59,15 @@ Dimensions: **260 mm** wide × **84.6 mm** deep (front to back). Outputs moved t
 
 - Custom PCB with CHOC hotswap sockets + WS2812B-2020 per key + MCP23017 I2C GPIO expander + 100nF decoupling caps
 
-### Right column — Monitoring + Connectivity (IO Board)
+### Left column — Connectivity + Monitoring (IO Board)
 
-All right-column panel-mount components sit on the IO Board, connected to the main board via 12-pin FFC.
+All left-column panel-mount components sit on the IO Board, connected to the main board via 12-pin FFC + 6-pin Ethernet ribbon cable.
 
-- Vol pot + Power button (top row)
-- Headphone 1/4″ TRS jack
 - MIDI HOST dual USB-A (stacked)
-- MIDI OUT + MIDI IN (3.5mm TRS Type A)
-
-Power-on: press button → load switch latches on → Teensy boots.
-Power-off: press button → firmware saves state to SD → load switch releases.
+- ETH RJ45 (Ethernet, with integrated magnetics)
+- MIDI IN + MIDI OUT (3.5mm TRS Type A)
+- Headphone output (from off-the-shelf HP amp breakout module mounted nearby)
+- PHONES label + VOL pot (10kΩ log)
 
 ## Keys — Custom PCB
 

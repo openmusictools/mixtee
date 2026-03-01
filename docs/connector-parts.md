@@ -43,6 +43,20 @@ Every connector needs an exact manufacturer part number (MPN) for KiCad footprin
 | 3.5mm TRS jack (MIDI IN) | SJ-3523-SMT | CUI Devices | SMD | IO Board | MIDI IN Type A; top panel |
 | 3.5mm TRS jack (MIDI OUT) | SJ-3523-SMT | CUI Devices | SMD | IO Board | MIDI OUT Type A; top panel; same part as MIDI IN |
 
+### Ethernet
+
+| Connector | MPN | Manufacturer | Package | Board | Notes |
+|-----------|-----|-------------|---------|-------|-------|
+| RJ45 MagJack (integrated magnetics) | TBD (e.g. Pulse J0011D01BNL or HanRun HR911105A) | TBD | Through-hole, panel-mount | IO Board | 10/100 Mbps Ethernet; integrated transformer + optional LEDs; top panel |
+| 6-pin header (Ethernet ribbon) | TBD | TBD | Through-hole, 2.54mm pitch | Main Board (×1), IO Board (×1) | Carries ETH TX+/TX-/RX+/RX-/LED/GND |
+
+### Headphone Amp
+
+| Connector | MPN | Manufacturer | Package | Board | Notes |
+|-----------|-----|-------------|---------|-------|-------|
+| HP amp breakout module | TBD (TPA6132 or MAX97220 breakout) | Various | Module (~15×20mm) | Mounted near IO Board | Off-the-shelf; ~$2–5; receives HP_L/HP_R/5V_A/GND from Main Board |
+| 4-pin header (HP breakout) | TBD | TBD | Through-hole, 2.54mm pitch | IO Board | HP_L, HP_R, 5V_A, GND — connects to HP amp breakout module |
+
 ### SD Card
 
 | Connector | MPN | Manufacturer | Package | Board | Notes |
@@ -54,7 +68,7 @@ Every connector needs an exact manufacturer part number (MPN) for KiCad footprin
 | Connector | MPN | Manufacturer | Package | Board | Notes |
 |-----------|-----|-------------|---------|-------|-------|
 | Rotary encoder (with push) | PEC11R-4215F-S0024 | Bourns | Through-hole | Main Board (×3) | 24 detents, quadrature, push switch; NavX + NavY + Edit |
-| Power button (momentary) | — | TBD | Panel mount | Main Board | Momentary push button for soft-latch; select during enclosure design |
+| Power button (momentary) | TBD | TBD | Panel mount, screw-collar | Back panel (near PWR USB-C) | Off-the-shelf screw-collar momentary push button; wired to Main Board soft-latch |
 
 ### Key PCB
 
@@ -69,7 +83,8 @@ Every connector needs an exact manufacturer part number (MPN) for KiCad footprin
 | Cable | Type | Length | Pins | Notes |
 |-------|------|--------|------|-------|
 | Main ↔ Input Mother (×2) | FFC 1.0mm pitch | 40-50mm | 16 | Pre-made, bottom-contact |
-| Main ↔ IO Board | FFC 1.0mm pitch | 30-40mm | 12 | Pre-made, bottom-contact |
+| Main ↔ IO Board | FFC 1.0mm pitch | 100-120mm | 12 | Pre-made, bottom-contact |
+| Main ↔ IO Board (Ethernet) | 6-pin ribbon cable 2.54mm | ~100mm | 6 | ETH TX+/TX-/RX+/RX-/LED/GND |
 | Mother ↔ Daughter (×3) | JST-PH wire harness | 15-20mm | 6 | Pre-crimped |
 | Board 1-top → Board O-top | JST-PH wire harness | ~80mm | 10 | Output analog signals |
 | Main ↔ Key PCB | JST-PH wire harness | 30-40mm | 6 | NeoPixel + I2C + INT + power |

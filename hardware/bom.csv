@@ -19,14 +19,17 @@ Power & Connectivity,TPS2051 power switch,2,SOT-23-5,,1.50,3.00,IO Board; USB ho
 Power & Connectivity,USB-A dual stacked socket,1,Through-hole (Amphenol 67298-4090),,4.00,4.00,IO Board; 2x USB-A host ports for MIDI controllers; top panel
 Power & Connectivity,3.5mm TRS jack (MIDI IN),1,SMD (CUI SJ-3523-SMT),,1.50,1.50,IO Board; MIDI IN Type A (Tip=sink Ring=source Sleeve=shield); top panel
 Power & Connectivity,FFC 12-pin ZIF connector (Main-IO),2,SMD 1.0mm pitch,,0.50,1.00,Main Board (x1) + IO Board (x1); 12-pin 1.0mm FFC for Main-IO interconnect
-Power & Connectivity,FFC 12-pin cable (Main-IO),1,1.0mm pitch 30-40mm,,0.50,0.50,Main to IO Board interconnect cable
-Power & Connectivity,Momentary push button (panel mount),1,Panel mount,,1.50,1.50,Soft power on/off; triggers soft-latch circuit; top panel
+Power & Connectivity,FFC 12-pin cable (Main-IO),1,1.0mm pitch 100-120mm,,0.50,0.50,Main to IO Board interconnect cable
+Power & Connectivity,RJ45 MagJack (integrated magnetics),1,Through-hole panel-mount,,3.00-5.00,3.00-5.00,IO Board; Ethernet 10/100 Mbps; integrated transformer + LEDs; top panel
+Power & Connectivity,6-pin header (Ethernet ribbon),2,Through-hole 2.54mm pitch,,0.30,0.60,Main Board + IO Board; carries ETH TX/RX differential pairs
+Power & Connectivity,6-pin ribbon cable (Ethernet),1,2.54mm pitch ~100mm,,0.50,0.50,Main Board to IO Board Ethernet connection
+Power & Connectivity,Momentary push button (panel mount screw-collar),1,Panel mount screw-collar,,2.00-4.00,2.00-4.00,Back panel; next to PWR USB-C; wired to Main Board soft-latch
 Power & Connectivity,Full-size SD card socket,1,Through-hole/SMD (Molex 472192001),,2.00-3.00,2.00-3.00,SDIO routed from Teensy bottom pads 42-47; top panel; built-in micro-SD slot unused
 Audio I/O & Analog,Switchcraft 112BPC (1/4 inch TS jack),24,PCB-mount through-hole,,1.25,30.00,16 inputs + 8 outputs; 12.7mm mounting hole; back panel
 Audio I/O & Analog,1/4 inch TRS jack (Switchcraft 35RASMT2BHNTRX),1,PCB-mount through-hole,,2.00,2.00,IO Board; headphone output (stereo) with detect switch; top panel
 Audio I/O & Analog,Potentiometer 10k ohm log,1,Through-hole,,2.00,2.00,IO Board; headphone volume; dedicated analog pot; top panel
 Audio I/O & Analog,OPA1678 (dual op-amp),17,SOIC-8,,1.20,20.40,Input buffers (8); anti-alias (8); output (4); reconstruction (4); virtual ground buffer (1 section); NJM4580 acceptable as budget substitute
-Audio I/O & Analog,TPA6132A2 headphone amplifier,1,MSOP-8,,2.50,2.50,IO Board; ground-referenced stereo HP driver; 25 mW into 32 ohm; 0.01% THD+N
+Audio I/O & Analog,HP amp breakout module (TPA6132/MAX97220),1,Module (~15x20mm),,2.00-5.00,2.00-5.00,Off-the-shelf; ground-referenced stereo HP driver; mounted near IO Board; receives HP_L/HP_R from Main Board
 Audio I/O & Analog,TS5A3159 analog switch,4,SOT-23-5,,1.00,4.00,Pop suppression; SPST per output stereo pair; GPIO-controlled; low Ron ~1 ohm; 5V tolerant
 Audio I/O & Analog,6N138 optocoupler,1,DIP-8,,1.00,1.00,IO Board; MIDI IN galvanic isolation; industry standard at 31.25 kbaud
 Audio I/O & Analog,1N4148 signal diode (MIDI),1,DO-35 / SOD-323,,0.05,0.05,IO Board; MIDI IN optocoupler LED reverse protection
@@ -54,7 +57,8 @@ Passives & Protection,Resistors misc values,20,0603/0805,,0.01,0.20,Input attenu
 Passives & Protection,AC coupling caps 10 uF,16,0805/through-hole,,0.10,1.60,Input DC blocking (10 uF + 10k = ~1.6 Hz HPF)
 Passives & Protection,AC coupling caps 47 uF,8,Through-hole,,0.15,1.20,Output DC blocking
 Passives & Protection,Ceramic capacitor 15 pF,2,0402/0603,,0.02,0.04,IO Board; FE1.1s crystal load capacitors
+Passives & Protection,Ceramic capacitor 0.1 uF (Ethernet coupling),1,0603,,0.02,0.02,IO Board; AC coupling between Teensy PHY and RJ45 MagJack
 Passives & Protection,Soft-latch passives (R + C misc),1,0603/0805,,0.50,0.50,Debounce cap; RC timeout network; pull-up/pull-down resistors for latch
-Fabrication,PCB fabrication (prototype),1,,,30.00-60.00,30.00-60.00,Main (4L) + IO (2L) + input mother (4L) + daughter/output (2L) + key (2L); prototype qty; power module is off-the-shelf
+Fabrication,PCB fabrication (prototype),1,,,30.00-60.00,30.00-60.00,Main (4L) + IO (2L left side) + input mother (4L) + daughter/output (2L) + key (2L); prototype qty; power module + HP amp are off-the-shelf
 Fabrication,Enclosure (DIY/3D print or kit),1,,,20.00-50.00,20.00-50.00,260x100x50 mm (WxDxH)
 User Supplied,SD card (UHS-I U3 / V30),1,Full-size SD,,8.00-15.00,,User-supplied; 32-64 GB recommended; pre-format 64 KB clusters

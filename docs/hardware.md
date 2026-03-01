@@ -122,14 +122,14 @@
 **5V Rail Partitioning:**
 
 - 5V_DIG: USB hub VBUS + NeoPixels + TFT backlight (noisy loads)
-- 5V_A: Dedicated low-noise LDO for audio analog stages (also routed to IO Board via FFC for headphone amp)
+- 5V_A: Dedicated low-noise LDO for audio analog stages (also powers off-the-shelf HP amp breakout module via short wire from Main Board)
 
 **Audio Analog Power:**
 
 - **LDO regulator:** ADP7118 — 5V input → 3.3V_A clean analog rail (3 instances total)
   - Ultra-low noise: <10 µV RMS (vs. ferrite bead approach which only filters HF)
   - Each Input Mother Board has its own ADP7118, powered from FFC pin 9 (5V raw)
-  - Main Board has a third ADP7118 for the virtual ground buffer; 5V_A also routes via FFC to the IO Board for the headphone amplifier
+  - Main Board has a third ADP7118 for the virtual ground buffer; 5V_A also powers the HP amp breakout module via short wire
   - Separate LDO per board, not shared with digital 3.3V
   - Provides clean supply for op-amps and codec analog sections
   - **Op-amps run single-supply on 5V** with 2.5V virtual ground biasing (no charge pump needed)
@@ -164,7 +164,7 @@
 **FE1.1s discrete USB 2.0 hub IC** on IO Board (~$1.50):
 
 - 1 upstream port connected to Teensy 4.1 USB host pins (D+/D-) via Main↔IO FFC (USB Full-Speed, 12 Mbps)
-- 2 downstream ports routed to panel-mount USB-A sockets (MIDI host, top panel right column)
+- 2 downstream ports routed to panel-mount USB-A sockets (MIDI HOST, top panel left column)
 - External 12 MHz crystal + 2× 15 pF load capacitors
 - Per-port VBUS power switching via TPS2051 load switches (500 mA per port, on IO Board)
 - Self-powered configuration (VBUS from 5V_DIG via FFC)
@@ -173,14 +173,26 @@
 
 ### Headphone Amplifier
 
-**TPA6132A2** dedicated headphone driver IC (on IO Board):
+**Off-the-shelf TPA6132 or MAX97220 breakout module** (~$2–5, mounted near IO Board):
 
 - Ground-referenced output — no AC coupling capacitors required on headphone jack
 - 25 mW into 32Ω load, 0.01% THD+N typical
-- Single 3.3–5V supply (powered from 5V_A via Main↔IO FFC pin 11)
-- Stereo differential input from DAC outputs (Master L/R from U1 DAC, routed via FFC pins 1–2)
-- Output routed through 10kΩ log potentiometer (volume control) to 1/4" TRS headphone jack (both on IO Board)
-- Headphone detect switch on TRS jack wired to Teensy GPIO pin 39 via FFC pin 9 (allows firmware to mute main outputs when headphones inserted)
+- Single 3.3–5V supply (powered from 5V_A on Main Board)
+- Stereo input from DAC outputs (Master L/R from U1 DAC, routed from Main Board via short wires to breakout module — not via Main↔IO FFC)
+- Output routed through 10kΩ log potentiometer (volume control) to headphone output jack (both on IO Board)
+- Headphone detect switch wired to Teensy GPIO pin 39 via short wire (allows firmware to mute main outputs when headphones inserted)
+
+### Ethernet
+
+**Native Teensy 4.1 Ethernet** (DP83825I PHY already on board):
+
+- 10/100 Mbps Ethernet via RJ45 MagJack on IO Board (top panel, left column)
+- Teensy bottom pads carry post-PHY differential TX/RX pairs to Main Board header
+- 6-pin ribbon cable routes Ethernet signals from Main Board to IO Board
+- 0.1µF coupling caps between Teensy PHY output and MagJack integrated transformer on IO Board
+- RJ45 MagJack includes integrated magnetics and optional activity LEDs
+- Use `QNEthernet` or `NativeEthernet` library for TCP/IP stack
+- Applications: OSC control, remote monitoring, firmware updates, Dante/AVB bridging (future)
 
 ### MIDI IN Circuit
 
@@ -221,7 +233,7 @@
 | Board | Layers | Stackup | Rationale |
 |-------|--------|---------|-----------|
 | Main Board | **4-layer** | Sig / GND / PWR / Sig | TDM clock integrity (24.576 MHz BCLK), mixed-signal ground plane, power distribution |
-| IO Board | **2-layer** | Sig / GND | USB Full-Speed only (12 Mbps), headphone analog, MIDI — no high-speed digital |
+| IO Board | **2-layer** | Sig / GND | USB Full-Speed (12 Mbps), post-PHY Ethernet analog, MIDI — no high-speed digital |
 | Power Module | Off-the-shelf | — | STUSB4500 USB PD breakout (purchased module, no custom PCB) |
 | Input Mother Board | **4-layer** | Sig / GND / PWR / Sig | AK4619VN codecs + analog input stages + TDM signals need solid ground reference |
 | Input Daughter Board | **2-layer** | Sig / GND | Simple board: jacks + ESD diodes + connector, no high-speed signals |
@@ -311,13 +323,17 @@
 | OPA1678 (dual op-amp, SOIC-8) | 16       | Input buffers (8), anti-alias (8), output (4), reconstruction (4) — estimate, refine in schematic |
 | NJM4580 (alternate)           | 16       | Budget-friendly alternate to OPA1678            |
 | TS5A3159 analog switch (SOT-23-5) | 4    | Pop suppression — 1 per output stereo pair (Main, AUX1-3) |
-| TPA6132A2 headphone amplifier | 1        | Ground-referenced stereo HP driver on IO Board, 25mW/32Ω |
+| HP amp breakout module (TPA6132/MAX97220) | 1 | Off-the-shelf; ground-referenced stereo HP driver, 25mW/32Ω; mounted near IO Board |
+| RJ45 MagJack (integrated magnetics) | 1 | IO Board; Ethernet connector with integrated transformer + LEDs; top panel |
+| 0.1µF cap (Ethernet coupling) | 1 | IO Board; AC coupling between Teensy PHY and MagJack |
+| 6-pin header (Ethernet ribbon) | 2 | Main Board + IO Board; carries ETH TX/RX differential pairs |
+| 6-pin ribbon cable (Ethernet) | 1 | ~100mm; Main Board to IO Board Ethernet connection |
 
 ### Power Regulation
 
 | Part                           | Quantity | Notes                                    |
 | ------------------------------ | -------- | ---------------------------------------- |
-| ADP7118 LDO                    | 3        | 5V → 3.3V_A ultra-low-noise analog rail; 1 per Input Mother Board (2) + 1 on Main Board (virtual ground; 5V_A also routes to IO Board HP amp via FFC) |
+| ADP7118 LDO                    | 3        | 5V → 3.3V_A ultra-low-noise analog rail; 1 per Input Mother Board (2) + 1 on Main Board (virtual ground; 5V_A also powers HP amp breakout via short wire) |
 | TPS22965 load switch             | 1       | Soft-start / inrush limiting, 5A continuous |
 | 10 mΩ shunt resistor           | 1        | Current measurement test point           |
 
@@ -378,18 +394,20 @@ Left zone (Main Board):
 Center:
 - 16× CHOC key switches (4×4 grid): top-aligned with display
 
-Right column (IO Board):
-- Vol pot + Power button (top row)
-- Headphone 1/4" TRS jack
+Left column (IO Board):
 - MIDI HOST dual USB-A (stacked)
+- ETH RJ45 (Ethernet)
 - MIDI IN + MIDI OUT (3.5mm TRS Type A)
+- Headphone output (from off-the-shelf HP amp breakout)
+- PHONES label + VOL pot
 
-**Back panel (260 × 50 mm — all audio I/O + USB-C):**
+**Back panel (260 × 50 mm — all audio I/O + USB-C + power):**
 
 - 24× 1/4" TS jacks: 12 evenly spaced stereo pairs (L top row, R bottom row), 20 mm center-to-center
 - Order left to right (looking at back): Master, AUX1, AUX2, AUX3, 15/16, 13/14, 11/12, 9/10, 7/8, 5/6, 3/4, 1/2
 - No physical gaps between output and input groups — separation by labeling only
 - PWR USB-C (power only, 5V/5A USB PD): right side of back panel, on dedicated Power Board
+- POWER button (momentary, screw-collar): next to PWR USB-C on back panel, wired to Main Board soft-latch
 
 **No front, left, or right side panels with connectors.** All I/O accessible from top and back.
 

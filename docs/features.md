@@ -106,7 +106,7 @@ When navigating laterally past the last channel in a view, the Nav encoder cross
 
 ### Power
 
-- Soft power button (momentary) on top panel controls TPS22965 load switch
+- Soft power button (momentary) on back panel (next to PWR USB-C) controls TPS22965 load switch via wire to Main Board
 - Power-on: press → load switch latches → Teensy boots → last saved state restored from SD
 - Power-off: press → firmware flushes state to SD → confirms write complete → load switch releases
 

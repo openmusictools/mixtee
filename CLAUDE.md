@@ -18,9 +18,11 @@ MIXTEE is an open-source 16-input / 8-output digital mixer built around the Teen
 
 **I2C bus topology:** Teensy Wire (pins 18/19) → TCA9548A mux (0x70, main board) splits to codec boards; MCP23017 (0x20, Key PCB) sits upstream for key scanning.
 
-**Key hardware ICs:** AK4619VN (codec), TCA9548A (I2C mux), MCP23017 (GPIO expander), RA8875 (TFT controller), FE1.1s (USB hub, IO Board), TPA6132A2 (headphone amp, IO Board), STUSB4500 (USB PD sink), TPS22965 (load switch).
+**Key hardware ICs:** AK4619VN (codec), TCA9548A (I2C mux), MCP23017 (GPIO expander), RA8875 (TFT controller), FE1.1s (USB hub, IO Board), STUSB4500 (USB PD sink), TPS22965 (load switch). **Off-the-shelf modules:** STUSB4500 breakout (power), TPA6132/MAX97220 breakout (headphone amp).
 
-**PCB architecture:** 6 unique PCB designs, 10 physical boards + 1 off-the-shelf power module — Main Board, 1× IO Board, 2× Input Mother, 2× Input Daughter, 2× Output, 1× Key PCB, 1× STUSB4500 breakout (purchased). PC USB-C on top panel (Main Board). PWR USB-C on back panel (power module). See `docs/pcb-architecture.md`.
+**Connectivity:** Native Ethernet (DP83825I PHY on Teensy) via RJ45 MagJack on IO Board. USB MIDI host via FE1.1s hub (IO Board). MIDI IN/OUT via 3.5mm TRS Type A (IO Board).
+
+**PCB architecture:** 6 unique PCB designs, 10 physical boards + 2 off-the-shelf modules — Main Board, 1× IO Board (left side of top panel), 2× Input Mother, 2× Input Daughter, 2× Output, 1× Key PCB, 1× STUSB4500 breakout (purchased), 1× HP amp breakout (purchased). PC USB-C on top panel (Main Board). PWR USB-C + POWER button on back panel. See `docs/pcb-architecture.md`.
 
 ## Key Documentation Cross-References
 

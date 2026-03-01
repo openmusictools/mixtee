@@ -92,6 +92,19 @@ MIDI OUT is transmit-only at 31,250 baud. Pin 17 configured as Serial4 TX. **Rou
 
 These are dedicated USB2 PHY pads on the bottom of the Teensy 4.1 — not GPIO pins. **Routes via Main↔IO FFC pins 4–5 (USB_HOST_D+/D-) to FE1.1s USB hub IC upstream port on IO Board.** USB Full-Speed only (12 Mbps for MIDI host). Use `USBHost_t36` library for USB MIDI host.
 
+### Ethernet (Bottom Pads)
+
+| Pad | Signal | Notes |
+|-----|--------|-------|
+| TX+ | Ethernet transmit positive | Differential pair, post-PHY analog |
+| TX- | Ethernet transmit negative | Differential pair |
+| RX+ | Ethernet receive positive | Differential pair |
+| RX- | Ethernet receive negative | Differential pair |
+| LED | Activity LED (optional) | Active-low, accent LED driver |
+| GND | Ground | Shield/return |
+
+These are dedicated Ethernet PHY pads on the bottom of the Teensy 4.1 (DP83825I PHY). **Routes via 6-pin ribbon cable from Main Board header to IO Board header, then through 0.1µF coupling caps to RJ45 MagJack with integrated magnetics.** Post-PHY analog signals — cable-tolerant, no impedance-controlled routing required. Use `QNEthernet` or `NativeEthernet` library for TCP/IP stack.
+
 ### SDIO — External Full-Size SD Card Socket
 
 | Teensy Bottom Pad | Signal | Connection |
@@ -157,8 +170,8 @@ Available for GPIO: **22**
 | RA8875 INT | **1** | Active-low interrupt |
 | RA8875 RESET | **1** | Active-low reset (reclaimed from Serial3 TX) |
 | TS5A3159 mute control | **4** | 1 per output stereo pair |
-| Headphone detect | **1** | TRS jack switch input |
-| Power button sense | **1** | Soft-latch button state |
+| Headphone detect | **1** | TRS jack switch input (from HP breakout area) |
+| Power button sense | **1** | Soft-latch button state (back panel button, wired to Main Board) |
 | KEEP_ALIVE | **1** | Hold soft-latch set during operation |
 | MCP23017 INT (optional) | **1** | Interrupt-driven key scan; can be omitted if polling |
 | MIDI OUT | **1** | Serial4 TX (pin 17) |
@@ -202,8 +215,8 @@ The 4×4 key matrix (16 keys) is handled entirely by a **MCP23017 I2C GPIO expan
 | **36** | Encoder 2 (NavY) — Push | Input (pull-up) | |
 | **37** | TS5A3159 mute — AUX2 L/R | Output | |
 | **38** | TS5A3159 mute — AUX3 L/R | Output | Also A14 |
-| **39** | Headphone detect | Input (pull-up) | TRS jack switch on IO Board via FFC pin 9; also A15 |
-| **40** | Power button sense | Input (pull-up) | Reads soft-latch button state; also A16 |
+| **39** | Headphone detect | Input (pull-up) | TRS jack switch from HP breakout area (short wire to Main Board); also A15 |
+| **40** | Power button sense | Input (pull-up) | Back panel button wired to Main Board soft-latch; also A16 |
 | **41** | KEEP_ALIVE | Output | Holds soft-latch set; release to shut down; also A17 |
 
 ### Key Matrix Wiring (on Key PCB, via MCP23017)
@@ -316,20 +329,22 @@ With the MCP23017 handling the key matrix on-board, the cable only carries NeoPi
 
 | FFC Pin | Signal | Teensy Pin | Direction |
 |---------|--------|-----------|-----------|
-| 1 | HP_L (analog) | — | Analog (codec DAC → HP amp) |
-| 2 | HP_R (analog) | — | Analog (codec DAC → HP amp) |
-| 3 | GND (guard) | — | Ground (shield between analog and digital) |
-| 4 | USB_HOST_D+ | USB host pad | Bidirectional (USB FS 12 Mbps) |
-| 5 | USB_HOST_D- | USB host pad | Bidirectional (USB FS 12 Mbps) |
-| 6 | GND (USB) | — | Ground (USB return) |
-| 7 | MIDI_RX | 15 (Serial3 RX) | In (6N138 output → Teensy) |
-| 8 | MIDI_TX | 17 (Serial4 TX) | Out (Teensy → MIDI OUT circuit) |
-| 9 | HP_DETECT | 39 | In (TRS jack switch → Teensy GPIO) |
-| 10 | 5V_DIG | — | Power (USB hub, MIDI circuits) |
-| 11 | 5V_A | — | Power (HP amp clean supply) |
+| 1 | ETH_TX+ | Ethernet bottom pad | Analog (post-PHY differential) |
+| 2 | ETH_TX- | Ethernet bottom pad | Analog (post-PHY differential) |
+| 3 | GND (guard) | — | Ground (shield between Ethernet pairs) |
+| 4 | ETH_RX+ | Ethernet bottom pad | Analog (post-PHY differential) |
+| 5 | ETH_RX- | Ethernet bottom pad | Analog (post-PHY differential) |
+| 6 | GND (guard) | — | Ground (shield between Ethernet/USB) |
+| 7 | USB_HOST_D+ | USB host pad | Bidirectional (USB FS 12 Mbps) |
+| 8 | USB_HOST_D- | USB host pad | Bidirectional (USB FS 12 Mbps) |
+| 9 | MIDI_RX | 15 (Serial3 RX) | In (6N138 output → Teensy) |
+| 10 | MIDI_TX | 17 (Serial4 TX) | Out (Teensy → MIDI OUT circuit) |
+| 11 | 5V_DIG | — | Power (USB hub, MIDI, Ethernet circuits) |
 | 12 | GND | — | Ground (main return) |
 
-**Connector:** 12-pin 1.0mm pitch FFC, ZIF socket on each board. Cable length ~30–40mm (both boards under top panel). Only USB Full-Speed — no HS signals over FFC. Headphone analog lines guarded by adjacent GND pin.
+**Connector:** 12-pin 1.0mm pitch FFC, ZIF socket on each board. Cable length ~100–120mm (IO Board on left, Main Board center/right). Ethernet post-PHY analog signals are cable-tolerant. Only USB Full-Speed — no HS signals over FFC.
+
+**Headphone signals:** HP_L and HP_R route from Main Board directly to the off-the-shelf headphone amp breakout module via short wires, not through this FFC. The headphone detect signal routes via a short wire from the breakout area to Teensy GPIO pin 39.
 
 ------
 

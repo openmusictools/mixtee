@@ -23,11 +23,16 @@
 | JST-PH | 2.0mm | 6 | Key PCB |
 | JST-PH | 2.0mm | 2 | Power Board (5V + GND in) |
 | Header/ribbon | per module | 8-10 | RA8875 TFT display |
+| 6-pin header | 2.54mm | 6 | Ethernet ribbon cable to IO Board (TX+/TX-/RX+/RX-/LED/GND) |
 | USB-C (PC) | panel-mount | — | Top panel (data only) |
+
+## Ethernet Routing
+
+Teensy 4.1 Ethernet bottom pads (TX+, TX-, RX+, RX-, LED, GND) route from the Teensy underside to a 6-pin header on the Main Board. A ribbon cable carries these signals to the IO Board (left side of top panel), where they connect through 0.1µF coupling caps to the RJ45 MagJack.
 
 ## Panel-mount components
 
-Encoders (NavX, NavY, Edit), SD card socket, and PC USB-C protrude through top panel cutouts. Power arrives from the back-panel Power Board via 2-pin cable.
+Encoders (NavX, NavY, Edit), SD card socket, and PC USB-C protrude through top panel cutouts. Power arrives from the back-panel Power Board via 2-pin cable. The physical power button is on the back panel (next to PWR USB-C); the soft-latch circuit (74LVC1G00 + TPS22965) remains on the Main Board, with button wires (2-pin) routed from the back panel.
 
 ## Status
 
