@@ -1,6 +1,6 @@
 # MIXTEE: Teensy 4.1 Pin Mapping
 
-*← Back to [README](../README.md) | See also: [Hardware](hardware.md) · [PCB Architecture](pcb-architecture.md) · [AK4619VN Wiring](ak4619-wiring.md)*
+*← Back to [README](../README.md) | See also: [Hardware](hardware.md) · [System Topology](system-topology.md) · [AK4619VN Wiring](../hardware/pcbs/input-mother/ak4619-wiring.md)*
 
 ------
 
@@ -49,7 +49,7 @@ BCLK = 48 kHz × 16 slots × 32 bits = **24.576 MHz**. MCLK = 256×fs = **12.288
 | **18** | SDA | SDA | Wire (I2C0) |
 | **19** | SCL | SCL | Wire (I2C0) |
 
-All four AK4619VN codecs share one I2C bus via a **TCA9548A I2C mux** (address 0x70) on the main board. The mux isolates each Input Mother Board onto its own channel (Ch 0 for U1/U2, Ch 1 for U3/U4), resolving the AK4619VN 2-address limitation. A **MCP23017 I2C GPIO expander** (address 0x20) on the Key PCB handles the 4×4 key scan matrix over the same bus. SDA and SCL routed on both FFC cables and the Key PCB cable. External pull-ups: 4.7kΩ to 3.3V on the main board (upstream of mux). Each Input Mother Board has its own downstream pull-ups. See [AK4619VN Wiring](ak4619-wiring.md) for addressing details.
+All four AK4619VN codecs share one I2C bus via a **TCA9548A I2C mux** (address 0x70) on the main board. The mux isolates each Input Mother Board onto its own channel (Ch 0 for U1/U2, Ch 1 for U3/U4), resolving the AK4619VN 2-address limitation. A **MCP23017 I2C GPIO expander** (address 0x20) on the Key PCB handles the 4×4 key scan matrix over the same bus. SDA and SCL routed on both FFC cables and the Key PCB cable. External pull-ups: 4.7kΩ to 3.3V on the main board (upstream of mux). Each Input Mother Board has its own downstream pull-ups. See [AK4619VN Wiring](../hardware/pcbs/input-mother/ak4619-wiring.md) for addressing details.
 
 ### SPI0 — RA8875 TFT Display
 
@@ -219,44 +219,7 @@ The 4×4 key matrix (16 keys) is handled entirely by a **MCP23017 I2C GPIO expan
 | **40** | Power button sense | Input (pull-up) | Back panel button wired to Main Board soft-latch; also A16 |
 | **41** | KEEP_ALIVE | Output | Holds soft-latch set; release to shut down; also A17 |
 
-### Key Matrix Wiring (on Key PCB, via MCP23017)
-
-```
-             GPA0          GPA1          GPA2          GPA3
-         (COL 0, pull-up) (COL 1)      (COL 2)      (COL 3)
-              │              │              │              │
-GPB0 (ROW 0)─┼──[SW1]──|>──┼──[SW2]──|>──┼──[SW3]──|>──┼──[SW4]──|>──
-              │              │              │              │
-GPB1 (ROW 1)─┼──[SW5]──|>──┼──[SW6]──|>──┼──[SW7]──|>──┼──[SW8]──|>──
-              │              │              │              │
-GPB2 (ROW 2)─┼──[SW9]──|>──┼──[SW10]─|>──┼──[SW11]─|>──┼──[SW12]─|>──
-              │              │              │              │
-GPB3 (ROW 3)─┼──[SW13]─|>──┼──[SW14]─|>──┼──[SW15]─|>──┼──[SW16]─|>──
-              │              │              │              │
-```
-
-`|>` = 1N4148 diode (cathode toward row pin). Column pins use MCP23017 internal pull-ups. All matrix wiring is local to the Key PCB — only I2C + INT + power travel in the 6-pin cable to the main board.
-
-### Key ↔ Switch Mapping
-
-| Matrix Position | Key Function | NeoPixel Index |
-|----------------|-------------|----------------|
-| ROW0 × COL0 (SW1) | Mute | 0 |
-| ROW0 × COL1 (SW2) | Solo | 1 |
-| ROW0 × COL2 (SW3) | Rec | 2 |
-| ROW0 × COL3 (SW4) | (assignable) | 3 |
-| ROW1 × COL0 (SW5) | (assignable) | 4 |
-| ROW1 × COL1 (SW6) | (assignable) | 5 |
-| ROW1 × COL2 (SW7) | (assignable) | 6 |
-| ROW1 × COL3 (SW8) | (assignable) | 7 |
-| ROW2 × COL0 (SW9) | (assignable) | 8 |
-| ROW2 × COL1 (SW10) | (assignable) | 9 |
-| ROW2 × COL2 (SW11) | (assignable) | 10 |
-| ROW2 × COL3 (SW12) | (assignable) | 11 |
-| ROW3 × COL0 (SW13) | Home | 12 |
-| ROW3 × COL1 (SW14) | Back | 13 |
-| ROW3 × COL2 (SW15) | Page | 14 |
-| ROW3 × COL3 (SW16) | Shift | 15 |
+*Key matrix wiring and key-switch mapping moved to [Key PCB architecture](../hardware/pcbs/key/architecture.md).*
 
 ------
 
@@ -289,79 +252,11 @@ Using certain pins as GPIO makes their alternate peripheral functions unavailabl
 
 ------
 
-## FFC Cable Pin Mapping
-
-### Main ↔ Input Mother Board (16-pin 1.0mm FFC)
-
-| FFC Pin | Signal | Teensy Pin | Direction |
-|---------|--------|-----------|-----------|
-| 1 | MCLK | 23 (TDM1) or 33 (TDM2) | Out |
-| 2 | BCLK | 21 (TDM1) or 4 (TDM2) | Out |
-| 3 | LRCLK | 20 (TDM1) or 3 (TDM2) | Out |
-| 4 | TDM DATA IN (codec → Teensy) | 8 (TDM1) or 5 (TDM2) | In |
-| 5 | TDM DATA OUT (Teensy → codec) | 7 (TDM1) or 2 (TDM2) | Out |
-| 6 | I2C SDA | 18 | Bidirectional |
-| 7 | I2C SCL | 19 | Out |
-| 8 | 5V_DIG | — | Power |
-| 9 | 5V_A (to codec board LDO input) | — | Power |
-| 10 | GND | — | Ground |
-| 11 | GND | — | Ground |
-| 12 | GND | — | Ground |
-| 13 | TDM DATA IN 2 (codec 2 SDOUT → Teensy) | 32 (TDM1) or 34 (TDM2) | In |
-| 14–16 | (spare) | — | Future: codec PDN, interrupt |
-
-### Main ↔ Key PCB Cable
-
-With the MCP23017 handling the key matrix on-board, the cable only carries NeoPixel data, I2C, interrupt, and power:
-
-| Pin | Signal | Teensy Pin |
-|-----|--------|-----------|
-| 1 | NeoPixel DIN | 6 |
-| 2 | I2C SDA | 18 |
-| 3 | I2C SCL | 19 |
-| 4 | MCP23017 INT | 22 (optional) |
-| 5 | 5V | — |
-| 6 | GND | — |
-
-**Connector:** 6-pin JST-PH (2.0mm pitch), ~30–40mm cable.
-
-### Main ↔ IO Board (12-pin 1.0mm FFC)
-
-| FFC Pin | Signal | Teensy Pin | Direction |
-|---------|--------|-----------|-----------|
-| 1 | ETH_TX+ | Ethernet bottom pad | Analog (post-PHY differential) |
-| 2 | ETH_TX- | Ethernet bottom pad | Analog (post-PHY differential) |
-| 3 | GND (guard) | — | Ground (shield between Ethernet pairs) |
-| 4 | ETH_RX+ | Ethernet bottom pad | Analog (post-PHY differential) |
-| 5 | ETH_RX- | Ethernet bottom pad | Analog (post-PHY differential) |
-| 6 | GND (guard) | — | Ground (shield between Ethernet/USB) |
-| 7 | USB_HOST_D+ | USB host pad | Bidirectional (USB FS 12 Mbps) |
-| 8 | USB_HOST_D- | USB host pad | Bidirectional (USB FS 12 Mbps) |
-| 9 | MIDI_RX | 15 (Serial3 RX) | In (6N138 output → Teensy) |
-| 10 | MIDI_TX | 17 (Serial4 TX) | Out (Teensy → MIDI OUT circuit) |
-| 11 | 5V_DIG | — | Power (USB hub, MIDI, Ethernet circuits) |
-| 12 | GND | — | Ground (main return) |
-
-**Connector:** 12-pin 1.0mm pitch FFC, ZIF socket on each board. Cable length ~100–120mm (IO Board on left, Main Board center/right). Ethernet post-PHY analog signals are cable-tolerant. Only USB Full-Speed — no HS signals over FFC.
-
-**Headphone signals:** HP_L and HP_R route from Main Board directly to the off-the-shelf headphone amp breakout module via short wires, not through this FFC. The headphone detect signal routes via a short wire from the breakout area to Teensy GPIO pin 39.
+*FFC cable pinouts moved to per-board connections.md files. See [input-mother](../hardware/pcbs/input-mother/connections.md), [io](../hardware/pcbs/io/connections.md), [key](../hardware/pcbs/key/connections.md), [main](../hardware/pcbs/main/connections.md).*
 
 ------
 
-## Power Sequencing (Soft-Latch)
-
-```
-Button press → SR latch SET → TPS22965 EN → 5V rail on → Teensy boots
-                                                            ↓
-                                            Teensy asserts KEEP_ALIVE (pin 41)
-                                            Teensy reads button via pin 40
-
-Button press → Teensy detects (pin 40) → saves state → releases KEEP_ALIVE (pin 41)
-                                                            ↓
-                                            SR latch RESET → TPS22965 off → power down
-
-Long-press (>4s) → RC timeout resets latch directly (hardware failsafe)
-```
+*Power sequencing moved to [Main Board architecture](../hardware/pcbs/main/architecture.md).*
 
 ------
 

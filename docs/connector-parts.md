@@ -1,108 +1,39 @@
 # MIXTEE: Connector Part Numbers
 
-*← Back to [README](../README.md) | See also: [PCB Architecture](pcb-architecture.md) · [Hardware](hardware.md) · [Enclosure](enclosure.md)*
+*← Back to [README](../README.md) | See also: [System Topology](system-topology.md) · [Hardware](hardware.md)*
 
 ------
 
-## Purpose
+## MPN Index
 
-Every connector needs an exact manufacturer part number (MPN) for KiCad footprint selection and BOM generation. This document tracks connector selections across all MIXTEE PCBs.
+Quick reference for connector part numbers across all boards. For detailed pinouts and usage, see each board's `connections.md`.
 
-------
-
-## Connector Selections
-
-### USB Connectors
-
-| Connector | MPN | Manufacturer | Package | Board | Notes |
-|-----------|-----|-------------|---------|-------|-------|
-| USB-C receptacle (PWR) | — (on breakout module) | — | Module-included | Power Module (off-the-shelf) | Power only; STUSB4500 breakout handles USB PD; back panel |
-| USB-C receptacle (PC) | USB4105-GF-A | GCT | Mid-mount SMD | Main Board | Data only (D+/D- to Teensy USB device); top panel; same part for BOM consolidation |
-| USB-A dual stacked | 67298-4090 | Amphenol | Through-hole | IO Board | 2× USB-A host ports for MIDI controllers; top panel |
-
-### FFC / FPC Connectors
-
-| Connector | MPN | Manufacturer | Package | Board | Notes |
-|-----------|-----|-------------|---------|-------|-------|
-| FFC 16-pin ZIF (bottom contact) | 5025861690 | Molex | SMD, 1.0mm pitch | Main Board (×2), Input Mother (×2) | ZIF latch, bottom-contact, for 16-pin 1.0mm FFC cable |
-| FFC 12-pin ZIF (bottom contact) | TBD (Molex 502586 series) | Molex | SMD, 1.0mm pitch | Main Board (×1), IO Board (×1) | ZIF latch, bottom-contact, for 12-pin 1.0mm Main↔IO FFC cable |
-
-### JST-PH Connectors
-
-| Connector | MPN | Manufacturer | Package | Board | Notes |
-|-----------|-----|-------------|---------|-------|-------|
-| JST-PH 6-pin header | B6B-PH-K-S | JST | Through-hole, 2.0mm pitch | Main Board, Key PCB, Mother/Daughter boards | Key PCB cable + mother↔daughter interconnects |
-| JST-PH 10-pin header | B10B-PH-K-S | JST | Through-hole, 2.0mm pitch | Board 1-top, Board O-top | Output analog cable (8 signals + 2 GND) |
-
-### Audio Connectors
-
-| Connector | MPN | Manufacturer | Package | Board | Notes |
-|-----------|-----|-------------|---------|-------|-------|
-| 1/4" TS jack (panel mount) | 112BPC | Switchcraft | PCB-mount through-hole | Input Mother, Input Daughter, Output boards | 24× total (16 input + 8 output); 12.7mm mounting hole |
-| 1/4" TRS jack (headphone) | 35RASMT2BHNTRX | Switchcraft | PCB-mount through-hole | IO Board | Stereo headphone output with detect switch; top panel |
-| 3.5mm TRS jack (MIDI IN) | SJ-3523-SMT | CUI Devices | SMD | IO Board | MIDI IN Type A; top panel |
-| 3.5mm TRS jack (MIDI OUT) | SJ-3523-SMT | CUI Devices | SMD | IO Board | MIDI OUT Type A; top panel; same part as MIDI IN |
-
-### Ethernet
-
-| Connector | MPN | Manufacturer | Package | Board | Notes |
-|-----------|-----|-------------|---------|-------|-------|
-| RJ45 MagJack (integrated magnetics) | TBD (e.g. Pulse J0011D01BNL or HanRun HR911105A) | TBD | Through-hole, panel-mount | IO Board | 10/100 Mbps Ethernet; integrated transformer + optional LEDs; top panel |
-| 6-pin header (Ethernet ribbon) | TBD | TBD | Through-hole, 2.54mm pitch | Main Board (×1), IO Board (×1) | Carries ETH TX+/TX-/RX+/RX-/LED/GND |
-
-### Headphone Amp
-
-| Connector | MPN | Manufacturer | Package | Board | Notes |
-|-----------|-----|-------------|---------|-------|-------|
-| HP amp breakout module | TBD (TPA6132 or MAX97220 breakout) | Various | Module (~15×20mm) | Mounted near IO Board | Off-the-shelf; ~$2–5; receives HP_L/HP_R/5V_A/GND from Main Board |
-| 4-pin header (HP breakout) | TBD | TBD | Through-hole, 2.54mm pitch | IO Board | HP_L, HP_R, 5V_A, GND — connects to HP amp breakout module |
-
-### SD Card
-
-| Connector | MPN | Manufacturer | Package | Board | Notes |
-|-----------|-----|-------------|---------|-------|-------|
-| Full-size SD card socket | 472192001 | Molex | Through-hole / SMD | Main Board | Panel-mount; SDIO routed from Teensy bottom pads 42-47 |
-
-### User Interface
-
-| Connector | MPN | Manufacturer | Package | Board | Notes |
-|-----------|-----|-------------|---------|-------|-------|
-| Rotary encoder (with push) | PEC11R-4215F-S0024 | Bourns | Through-hole | Main Board (×3) | 24 detents, quadrature, push switch; NavX + NavY + Edit |
-| Power button (momentary) | TBD | TBD | Panel mount, screw-collar | Back panel (near PWR USB-C) | Off-the-shelf screw-collar momentary push button; wired to Main Board soft-latch |
-
-### Key PCB
-
-| Connector | MPN | Manufacturer | Package | Board | Notes |
-|-----------|-----|-------------|---------|-------|-------|
-| Kailh CHOC hotswap socket | CPG135001S30 | Kailh | SMD | Key PCB (×16) | CHOC v1/v2 compatible |
-
-------
+| Part | MPN | Manufacturer | Board(s) | Notes |
+|------|-----|-------------|----------|-------|
+| USB-C (PC) | USB4105-GF-A | GCT | Main | Data only, mid-mount SMD |
+| USB-A dual stacked | 67298-4090 | Amphenol | IO | 2× MIDI host ports |
+| FFC 16-pin ZIF | 5025861690 | Molex | Main (×2), Input Mother (×2) | 1.0mm pitch, bottom-contact |
+| FFC 12-pin ZIF | TBD (Molex 502586 series) | Molex | Main, IO | 1.0mm pitch, bottom-contact |
+| JST-PH 6-pin | B6B-PH-K-S | JST | Main, Key, Mother/Daughter | 2.0mm pitch, through-hole |
+| JST-PH 10-pin | B10B-PH-K-S | JST | Input Mother (1-top), Daughter-Output (O-top) | Output analog cable |
+| 1/4" TS jack | 112BPC | Switchcraft | Input Mother, Daughter-Output | 24× total (16 in + 8 out) |
+| 1/4" TRS jack (HP) | 35RASMT2BHNTRX | Switchcraft | IO | Stereo headphone, detect switch |
+| 3.5mm TRS (MIDI) | SJ-3523-SMT | CUI Devices | IO | MIDI IN + MIDI OUT Type A |
+| RJ45 MagJack | TBD | TBD | IO | 10/100 Ethernet, integrated magnetics |
+| 6-pin header (ETH) | TBD | TBD | Main, IO | 2.54mm, Ethernet ribbon |
+| 4-pin header (HP) | TBD | TBD | IO | HP amp breakout module |
+| SD card socket | 472192001 | Molex | Main | Full-size, panel-mount |
+| Rotary encoder | PEC11R-4215F-S0024 | Bourns | Main (×3) | 24 detents, push switch |
+| Power button | TBD | TBD | Back panel | Screw-collar momentary |
+| CHOC hotswap | CPG135001S30 | Kailh | Key (×16) | CHOC v1/v2 compatible |
 
 ## Cable Assemblies
 
-| Cable | Type | Length | Pins | Notes |
-|-------|------|--------|------|-------|
-| Main ↔ Input Mother (×2) | FFC 1.0mm pitch | 40-50mm | 16 | Pre-made, bottom-contact |
-| Main ↔ IO Board | FFC 1.0mm pitch | 100-120mm | 12 | Pre-made, bottom-contact |
-| Main ↔ IO Board (Ethernet) | 6-pin ribbon cable 2.54mm | ~100mm | 6 | ETH TX+/TX-/RX+/RX-/LED/GND |
-| Mother ↔ Daughter (×3) | JST-PH wire harness | 15-20mm | 6 | Pre-crimped |
-| Board 1-top → Board O-top | JST-PH wire harness | ~80mm | 10 | Output analog signals |
-| Main ↔ Key PCB | JST-PH wire harness | 30-40mm | 6 | NeoPixel + I2C + INT + power |
-
-------
-
-## KiCad Footprint Status
-
-| Part | KiCad Library Footprint | Status |
-|------|------------------------|--------|
-| USB4105-GF-A | Connector_USB:USB_C_Receptacle_GCT_USB4105 | Verify in KiCad 9 library |
-| 67298-4090 | Connector_USB:USB_A_Amphenol_67298-4090_Dual | Verify or create |
-| 5025861690 | Connector_FFC-FPC:Molex_5025861690 | Verify or create |
-| TBD (12-pin ZIF) | Connector_FFC-FPC:Molex_502586_12pin | Select MPN + verify or create |
-| B6B-PH-K-S | Connector_JST:JST_PH_B6B-PH-K-S_1x06_P2.00mm_Vertical | Available in KiCad |
-| B10B-PH-K-S | Connector_JST:JST_PH_B10B-PH-K-S_1x10_P2.00mm_Vertical | Available in KiCad |
-| 112BPC | Custom — Switchcraft 112BPC | Must create |
-| SJ-3523-SMT | Connector_Audio:CUI_SJ-3523-SMT | Verify in KiCad 9 library |
-| 472192001 | Connector_Card:SD_Molex_472192001 | Verify or create |
-| PEC11R-4215F-S0024 | Connector:Bourns_PEC11R | Verify or create |
-| CPG135001S30 | Custom — Kailh CHOC hotswap | Community library available |
+| Cable | Type | Pins | Length |
+|-------|------|------|--------|
+| Main ↔ Input Mother (×2) | FFC 1.0mm | 16 | 40–50mm |
+| Main ↔ IO Board | FFC 1.0mm | 12 | 100–120mm |
+| Ethernet ribbon | 6-pin 2.54mm | 6 | ~100mm |
+| Mother ↔ Daughter (×3) | JST-PH harness | 6 | 15–20mm |
+| 1-top → O-top | JST-PH harness | 10 | ~80mm |
+| Main ↔ Key PCB | JST-PH harness | 6 | 30–40mm |

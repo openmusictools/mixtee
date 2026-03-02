@@ -1,6 +1,6 @@
 # MIXTEE: Hardware
 
-*← Back to [README](../README.md) | See also: [Features](features.md) · [Firmware](firmware.md) · [UI Architecture](ui-architecture.md)*
+*← Back to [README](../README.md) | See also: [Features](features.md) · [Firmware](firmware.md) · [UI Architecture](ui-architecture.md) · [System Topology](system-topology.md)*
 
 ------
 
@@ -10,7 +10,7 @@
   - Total capacity: 16 ADC channels + 16 DAC channels (8 DAC outputs used)
   - Single vendor simplifies TDM formatting, clock distribution, and register configuration
   - TDM/I2S serial audio interface
-  - I2C control interface (2 addresses via single CAD pin; TCA9548A I2C mux on main board isolates each codec board — see [AK4619VN Wiring](ak4619-wiring.md))
+  - I2C control interface (2 addresses via single CAD pin; TCA9548A I2C mux on main board isolates each codec board — see [AK4619VN Wiring](../hardware/pcbs/input-mother/ak4619-wiring.md))
   - 48 kHz / 24-bit target
 - **Digital Interface:** TDM over I2S to Teensy 4.1
 
@@ -39,49 +39,7 @@
 
 ------
 
-## Analog Stage Design
-
-### Input Stage (per channel)
-
-- **Input impedance:** 10 kΩ (standard for line-level synth/electronic instrument outputs)
-- **Input voltage range:** ±5V peak (accommodates Eurorack, +4 dBu pro gear, and consumer -10 dBV)
-- **Topology:** Non-inverting buffer with adjustable attenuation
-  - Op-amp: OPA1678 (4.5 nV/√Hz, rail-to-rail output, low distortion)
-  - Input resistor divider or trim to scale hot signals into ADC full-scale range
-  - AC-coupled input (10 µF + 10 kΩ gives ~1.6 Hz HPF, blocks DC offsets from synths)
-- **Anti-alias filter:** 2nd-order Sallen-Key low-pass, fc ≈ 22 kHz, Butterworth alignment
-  - Placed between input buffer output and ADC input pin
-  - Component values: ~3.3 nF + ~6.8 nF, ~1 kΩ + ~1 kΩ (adjust for exact fc)
-  - Provides ~40 dB/decade rolloff above Nyquist at 48 kHz
-- **ESD protection:** Schottky clamp diodes to rails on all input jacks
-
-### Output Stage (per channel)
-
-- **Topology:** Active reconstruction filter + line driver
-  - Op-amp: OPA1678 (same as input, keeps BOM simple)
-  - 2nd-order Sallen-Key low-pass, fc ≈ 22 kHz (reconstruction / smoothing filter)
-- **Output impedance:** ~100 Ω series resistor (cable drive, short-circuit protection)
-- **Output level:** 0 dBu nominal (+4 dBu max before clipping)
-- **DC blocking:** AC coupling cap on output (47 µF, keeps DC offset from reaching downstream gear)
-- **Pop suppression:** TS5A3159 analog switch per output pair (SPST, SOT-23-5)
-  - GPIO-controlled by Teensy — firmware opens switches during boot/shutdown ramp for silent transitions
-  - 4× switches total (Main L/R, AUX1 L/R, AUX2 L/R, AUX3 L/R — one IC per stereo pair)
-  - Low Ron (~1Ω), 5V tolerant, SOT-23-5 footprint
-
-### Op-Amp Selection Rationale
-
-| Parameter      | TL072 (original) | OPA1678 (recommended) | NJM4580 (alternate) |
-| -------------- | ----------------- | --------------------- | ------------------- |
-| Noise density  | 18 nV/√Hz        | 4.5 nV/√Hz           | 8 nV/√Hz           |
-| THD+N          | 0.003%            | 0.00005%              | 0.001%              |
-| GBW            | 3 MHz             | 24 MHz                | 15 MHz              |
-| Supply range   | ±3.5–18V          | 4.5–36V               | ±2–18V              |
-| Package        | DIP-8 / SOIC-8    | SOIC-8 / TSSOP-8      | DIP-8 / SOIC-8      |
-| Cost (approx)  | $0.50             | $1.20                 | $0.80               |
-
-- OPA1678 recommended for all stages (input buffer, anti-alias, reconstruction, output driver)
-- NJM4580 acceptable as lower-cost alternate for DIY builders on a budget
-- TL072 not recommended: noise floor incompatible with >100 dB dynamic range target
+*Analog stage design (input stage, output stage, op-amp selection): see [Input Mother Board architecture](../hardware/pcbs/input-mother/architecture.md).*
 
 ------
 
@@ -119,112 +77,19 @@
 
 ### Power Distribution
 
-**5V Rail Partitioning:**
+5V rail is split into 5V_DIG (noisy loads: USB, NeoPixels, TFT) and 5V_A (low-noise LDO for audio). TPS22965 load switch provides soft-start. ADP7118 LDOs (3 instances) generate clean 3.3V_A rails. See [Main Board architecture](../hardware/pcbs/main/architecture.md) for detailed power distribution design.
 
-- 5V_DIG: USB hub VBUS + NeoPixels + TFT backlight (noisy loads)
-- 5V_A: Dedicated low-noise LDO for audio analog stages (also powers off-the-shelf HP amp breakout module via short wire from Main Board)
+*USB host hub details: see [IO Board architecture](../hardware/pcbs/io/architecture.md).*
 
-**Audio Analog Power:**
+*Headphone amplifier details: see [IO Board architecture](../hardware/pcbs/io/architecture.md).*
 
-- **LDO regulator:** ADP7118 — 5V input → 3.3V_A clean analog rail (3 instances total)
-  - Ultra-low noise: <10 µV RMS (vs. ferrite bead approach which only filters HF)
-  - Each Input Mother Board has its own ADP7118, powered from FFC pin 9 (5V raw)
-  - Main Board has a third ADP7118 for the virtual ground buffer; 5V_A also powers the HP amp breakout module via short wire
-  - Separate LDO per board, not shared with digital 3.3V
-  - Provides clean supply for op-amps and codec analog sections
-  - **Op-amps run single-supply on 5V** with 2.5V virtual ground biasing (no charge pump needed)
-  - Virtual ground generated by precision resistor divider (2× 10kΩ 0.1%) buffered by one section of an OPA1678
-  - This provides a stable mid-rail reference for AC-coupled signal paths
-  - OPA1678 rail-to-rail output gives ~3.5Vpp usable swing — sufficient for +4 dBu (≈3.47Vpp)
-  - Simpler power design, no charge pump switching noise to contaminate audio
-- **Ferrite bead** still used between 5V_DIG and 5V input to LDO (belt-and-suspenders)
+*Ethernet details: see [IO Board architecture](../hardware/pcbs/io/architecture.md).*
 
-**Soft-Start Circuit:**
+*MIDI IN circuit details: see [IO Board architecture](../hardware/pcbs/io/architecture.md).*
 
-- **P-FET load switch** (TPS22965, 5A continuous) on main 5V input after polyfuse
-  - Controlled slew rate limits inrush current during power-on
-  - Prevents voltage sag on USB-C supplies from bulk cap charging
-  - Enable signal can be tied to RC delay or Teensy GPIO for sequenced startup
+*MIDI OUT circuit details: see [IO Board architecture](../hardware/pcbs/io/architecture.md).*
 
-**Protection:**
-
-- Input polyfuse (2.5A hold / 5A trip) on Power Board USB-C VBUS
-- Soft-start load switch (see above)
-- Per-port current limiting for USB host (TPS2051 power switches on IO Board)
-- Bulk capacitor (1000-2200 µF) near NeoPixel power entry
-- Local decoupling at every subsystem
-
-**Current Measurement Test Point:**
-
-- Low-side shunt resistor (10 mΩ) on main 5V rail with test points
-- Allows builders to verify supply current with a multimeter during bringup
-
-### USB Host Hub
-
-**FE1.1s discrete USB 2.0 hub IC** on IO Board (~$1.50):
-
-- 1 upstream port connected to Teensy 4.1 USB host pins (D+/D-) via Main↔IO FFC (USB Full-Speed, 12 Mbps)
-- 2 downstream ports routed to panel-mount USB-A sockets (MIDI HOST, top panel left column)
-- External 12 MHz crystal + 2× 15 pF load capacitors
-- Per-port VBUS power switching via TPS2051 load switches (500 mA per port, on IO Board)
-- Self-powered configuration (VBUS from 5V_DIG via FFC)
-- Minimal external components: crystal, caps, pull-up/pull-down resistors per datasheet
-- Overcurrent protection per port (TPS2051 fault output routed to Teensy GPIO for firmware notification)
-
-### Headphone Amplifier
-
-**Off-the-shelf TPA6132 or MAX97220 breakout module** (~$2–5, mounted near IO Board):
-
-- Ground-referenced output — no AC coupling capacitors required on headphone jack
-- 25 mW into 32Ω load, 0.01% THD+N typical
-- Single 3.3–5V supply (powered from 5V_A on Main Board)
-- Stereo input from DAC outputs (Master L/R from U1 DAC, routed from Main Board via short wires to breakout module — not via Main↔IO FFC)
-- Output routed through 10kΩ log potentiometer (volume control) to headphone output jack (both on IO Board)
-- Headphone detect switch wired to Teensy GPIO pin 39 via short wire (allows firmware to mute main outputs when headphones inserted)
-
-### Ethernet
-
-**Native Teensy 4.1 Ethernet** (DP83825I PHY already on board):
-
-- 10/100 Mbps Ethernet via RJ45 MagJack on IO Board (top panel, left column)
-- Teensy bottom pads carry post-PHY differential TX/RX pairs to Main Board header
-- 6-pin ribbon cable routes Ethernet signals from Main Board to IO Board
-- 0.1µF coupling caps between Teensy PHY output and MagJack integrated transformer on IO Board
-- RJ45 MagJack includes integrated magnetics and optional activity LEDs
-- Use `QNEthernet` or `NativeEthernet` library for TCP/IP stack
-- Applications: OSC control, remote monitoring, firmware updates, Dante/AVB bridging (future)
-
-### MIDI IN Circuit
-
-**3.5mm TRS Type A** input with **6N138** optocoupler isolation (on IO Board):
-
-- Input side: 220Ω series resistor + 1N4148 protection diode across optocoupler LED
-- TRS wiring (Type A standard): Tip = current sink (pin 5), Ring = current source (pin 4), Sleeve = shield
-- Optocoupler output: open-collector, pulled up to 3.3V via 470Ω resistor
-- Output routes via Main↔IO FFC pin 7 (MIDI_RX) to Teensy Serial3 RX pin 15 at 31.25 kbaud
-- 6N138 is industry standard, proven at MIDI baud rate, universal reference schematics available
-- 3.5mm TRS is compact and modern; legacy 5-pin DIN gear connects via TRS-to-DIN adapter cable
-
-### MIDI OUT Circuit
-
-**3.5mm TRS Type A** output (same connector type as MIDI IN, on IO Board):
-
-- TRS wiring (Type A standard): Tip = current sink (pin 5), Ring = current source (pin 4), Sleeve = shield
-- MIDI_TX arrives from Teensy Serial4 TX (pin 17) via Main↔IO FFC pin 8
-- 3.3V → 10Ω → TRS Ring (source); TRS Tip → 33Ω → MIDI_TX
-- Standard MIDI current-loop output at 31.25 kbaud
-- No optocoupler needed on output side (optocoupler is on the receiving device)
-- Software handles pass-through of MIDI IN messages and/or Teensy-generated MIDI output
-
-### Soft-Latch Power Circuit
-
-**SR latch** from discrete components + Teensy GPIO override:
-
-- **Power on:** Momentary button press sets latch → P-FET load switch (TPS22965) enables 5V rail → Teensy boots
-- **Power off (clean):** Button press detected by Teensy GPIO → firmware saves state to SD → Teensy asserts shutdown GPIO → latch resets → power off
-- **Power off (hard):** Long-press (>4 seconds) triggers RC timeout that resets latch directly, bypassing firmware — emergency fallback if firmware hangs
-- **Implementation:** 74LVC1G00 NAND gate (SOT-23-5) wired as SR latch, RC network for long-press timeout, debounce cap on button input
-- Teensy KEEP_ALIVE GPIO holds latch set during normal operation; releasing it allows clean shutdown
+*Soft-latch power circuit details: see [Main Board architecture](../hardware/pcbs/main/architecture.md).*
 
 ------
 

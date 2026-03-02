@@ -1,6 +1,6 @@
 # MIXTEE: PCB Design Rules
 
-*← Back to [README](../README.md) | See also: [PCB Architecture](pcb-architecture.md) · [Hardware](hardware.md)*
+*← Back to [README](../README.md) | See also: [System Topology](system-topology.md) · [Hardware](hardware.md)*
 
 ------
 

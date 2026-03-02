@@ -10,9 +10,46 @@ MIXTEE is an open-source 16-input / 8-output digital mixer built around the Teen
 
 ## Repository Structure
 
-- `docs/` — Design specifications (the core of the project right now)
-- `hardware/` — BOM (`bom.csv`), panel layout SVGs/images, reference schematics
+- `docs/` — System-level design specifications
+- `hardware/pcbs/{board}/` — Per-board documentation + design files
+  - `README.md` — Board concept (lightweight, any agent can skim)
+  - `connections.md` — Connector pinouts and interface contracts
+  - `architecture.md` — Deep implementation detail (circuits, registers, etc.)
+  - `CLAUDE.md` — Agent guidance for that board
+  - `designs/` — KiCad files, scripts, gerbers
+- `hardware/lib/` — Shared KiCad footprint library
+- `hardware/` — BOM (`bom.csv`), panel layout SVGs/images
 - `firmware/` — Empty; will contain Arduino/Teensyduino code when Phase 1 begins
+
+### Board Directories
+
+| Board | Path | Status |
+|-------|------|--------|
+| Main Board | `hardware/pcbs/main/` | Not started |
+| IO Board | `hardware/pcbs/io/` | Routed, Gerbers exported |
+| Input Mother | `hardware/pcbs/input-mother/` | Routed, Gerbers exported |
+| Daughter/Output | `hardware/pcbs/daughter-output/` | Routed, Gerbers exported |
+| Key PCB | `hardware/pcbs/key/` | Routed, Gerbers exported |
+| Power Board | `hardware/pcbs/power/` | Off-the-shelf module |
+
+## Documentation Loading Guide
+
+**PCB work on a specific board:**
+1. Read `docs/system-topology.md` — system overview, board summary, connector summary
+2. Read the target board's `README.md`, `connections.md`, `architecture.md`
+3. Read `docs/pcb-design-rules.md` + `docs/pcbs-workflow.md` if doing layout/routing
+4. Do NOT read other boards' `architecture.md` files
+
+**Cross-board interface check:**
+- Read the target board's `connections.md` only (~2KB) — contains the full interface contract
+
+**Firmware work:**
+- Read `docs/firmware.md` + `docs/features.md` + `docs/ui-architecture.md`
+- Read `docs/hardware.md` for BOM tables and target specs
+- Read `docs/pin-mapping.md` for Teensy pin assignments
+
+**System-level hardware review:**
+- Read `docs/system-topology.md` + `docs/hardware.md`
 
 ## Architecture at a Glance
 
@@ -24,25 +61,26 @@ MIXTEE is an open-source 16-input / 8-output digital mixer built around the Teen
 
 **Connectivity:** Native Ethernet (DP83825I PHY on Teensy) via RJ45 MagJack on IO Board. USB MIDI host via FE1.1s hub (IO Board). MIDI IN/OUT via 3.5mm TRS Type A (IO Board).
 
-**PCB architecture:** 6 unique PCB designs, 10 physical boards + 2 off-the-shelf modules — Main Board, 1× IO Board (left side of top panel), 2× Input Mother, 2× Input Daughter, 2× Output, 1× Key PCB, 1× STUSB4500 breakout (purchased), 1× HP amp breakout (purchased). PC USB-C on top panel (Main Board). PWR USB-C + POWER button on back panel. See `docs/pcb-architecture.md`.
+**PCB architecture:** 6 unique PCB designs, 10 physical boards + 2 off-the-shelf modules. See `docs/system-topology.md`.
 
 ## Key Documentation Cross-References
 
-These docs are tightly coupled — changes in one often require updates in others:
-
 | Topic | Primary doc | Also update |
 |-------|------------|-------------|
-| Pin assignments | `pin-mapping.md` | `pcb-architecture.md` (FFC pinouts), `ak4619-wiring.md` |
-| Component changes | `hardware.md` (BOM tables) | `hardware/bom.csv`, `pcb-architecture.md` |
-| Key PCB / UI controls | `enclosure.md`, `pin-mapping.md` | `features.md`, `hardware.md`, `pcb-architecture.md` |
-| Codec wiring / I2C | `ak4619-wiring.md` | `pin-mapping.md`, `hardware.md` |
-| Power budget | `hardware.md` | `bom.csv`, `enclosure.md` |
+| Pin assignments | `docs/pin-mapping.md` | Board `connections.md` files, `ak4619-wiring.md` |
+| Component changes | `docs/hardware.md` (BOM tables) | `hardware/bom.csv`, board `architecture.md` |
+| Key PCB / UI controls | `docs/enclosure.md`, `docs/pin-mapping.md` | `docs/features.md`, board READMEs |
+| Codec wiring / I2C | `hardware/pcbs/input-mother/ak4619-wiring.md` | `docs/pin-mapping.md`, `docs/hardware.md` |
+| Power budget | `docs/hardware.md` | `hardware/bom.csv`, `docs/enclosure.md` |
+| Connector pinouts | Board `connections.md` files | `docs/system-topology.md` (connector summary) |
+| Board definitions | Board `README.md` files | `docs/system-topology.md` (board summary) |
 
 ## When Editing Documentation
 
 - **Always check cross-references.** Component quantities, pin counts, connector specs, and power figures appear in multiple files. Use grep to find all occurrences before considering a change complete.
 - **`hardware/bom.csv`** and the markdown BOM tables in `hardware.md` must stay in sync.
-- Vendor reference material (AK4619VN datasheets, Teensy reference cards) lives in `.reffs/` — not part of the project docs. Do not modify or reference those files directly; use `docs/ak4619-wiring.md` for codec details and `docs/pin-mapping.md` for Teensy pin info.
+- Vendor reference material (AK4619VN datasheets, Teensy reference cards) lives in `.reffs/` — not part of the project docs. Do not modify or reference those files directly; use `hardware/pcbs/input-mother/ak4619-wiring.md` for codec details and `docs/pin-mapping.md` for Teensy pin info.
+- **Per-board CLAUDE.md files** provide agent-specific guidance for each board — read them before starting board work.
 
 ## Firmware (When It Exists)
 
