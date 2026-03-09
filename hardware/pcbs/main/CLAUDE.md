@@ -2,8 +2,8 @@
 
 ## Required Reading
 - `README.md` — board concept, dimensions, key ICs
-- `connections.md` — all connector interfaces (FFC, JST, USB-C, display, SD)
-- `architecture.md` — soft-latch, power distribution, I2C mux, XMOS XU216 USB audio bridge, **galvanic isolation** (Si8662BB, ISO1541, MEJ2S0505SC), pin assignments
+- `connections.md` — all connector interfaces (FFC, JST, display, SD)
+- `architecture.md` — soft-latch, power distribution, I2C mux, **galvanic isolation** (Si8662BB, ISO1541, MEJ2S0505SC), pin assignments
 - `docs/system-topology.md` — system overview and board summary
 
 ## On Demand
@@ -20,9 +20,6 @@
 - `hardware/pcbs/io/architecture.md` — IO Board circuits
 - `hardware/pcbs/key/architecture.md` — key matrix wiring
 - `docs/ui-architecture.md` — display/UI hierarchy (firmware concern)
-
-## On Demand (XMOS-specific)
-- `docs/usb-audio.md` — XMOS XU216 USB audio bridge architecture (hardware on this board)
 
 ## Design Files
 No design files yet — board design not started.

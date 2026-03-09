@@ -65,17 +65,19 @@ See [`../io/connections.md`](../io/connections.md) for the full 12-pin FFC pinou
 
 ---
 
-## ESP32-S3 Display Header (4 pin)
+## ESP32-S3 Display Header (6 pin)
 
-| Pin | Signal |
-|-----|--------|
-| 1 | UART TX (Teensy → ESP32-S3) |
-| 2 | UART RX (ESP32-S3 → Teensy) |
-| 3 | 5V |
-| 4 | GND |
+| Pin | Signal | Teensy Pin | Notes |
+|-----|--------|------------|-------|
+| 1 | UART TX (Teensy → ESP32-S3) | 1 | Serial1 TX — widget commands, meter data |
+| 2 | UART RX (ESP32-S3 → Teensy) | 0 | Serial1 RX — touch events, READY/ACK |
+| 3 | ESP32_EN | 9 | Active-high enable; pull-up on module. Assert LOW to reset. |
+| 4 | ESP32_GPIO0 | 10 | Boot mode: LOW = UART bootloader, HIGH/float = normal app boot |
+| 5 | 5V | — | Module power (5V_DIG) |
+| 6 | GND | — | Common ground |
 
-**Connector:** 4-pin JST or pin header to ESP32-S3 integrated display module.
-**Cable:** ~20mm. SPI0 bus no longer needed — display rendering handled entirely by ESP32-S3 module running LVGL.
+**Connector:** 6-pin JST-PH (B6B-PH-K-S) or pin header to ESP32-S3 integrated display module.
+**Cable:** ~20mm. Pins 3–4 enable Teensy-controlled ESP32 reflash from SD card — see [SD Update](../../docs/sd-update.md). SPI0 bus no longer needed — display rendering handled entirely by ESP32-S3 module running LVGL.
 
 ---
 
@@ -84,27 +86,6 @@ See [`../io/connections.md`](../io/connections.md) for the full 12-pin FFC pinou
 6-pin 2.54mm pitch header carries ETH TX+/TX-/RX+/RX-/LED/GND from Teensy bottom pads to IO Board. ~100mm ribbon cable (separate from FFC).
 
 ---
-
-## PC USB-C (panel-mount)
-
-USB4105-GF-A (GCT), mid-mount SMD. Data only — D+/D- routed to **XMOS XU216 USB audio bridge** (not Teensy native USB). USB Audio Class 2 (24-in/8-out, 24-bit 48 kHz) + USB MIDI composite device. Top panel, left zone. USBLC6-2 ESD protection on D+/D- between connector and XMOS.
-
-Teensy's native USB device port is available via a debug header for firmware updates (not panel-accessible).
-
----
-
-## XMOS XU216 ↔ Teensy (on-board connections)
-
-All connections are internal to the Main Board — no external cables.
-
-**TDM passive tap (9 signals):** XMOS taps existing TDM bus traces as high-Z inputs:
-- SAI1: BCLK (pin 21), LRCLK (pin 20), RX_DATA0 (pin 8), RX_DATA1 (pin 32), TX_DATA0 (pin 7)
-- SAI2: BCLK (pin 4), LRCLK (pin 3), RX_DATA0 (pin 5), RX_DATA1 (pin 34)
-
-**SPI control bus (4 signals):** MIDI forwarding between Teensy and XMOS:
-- CS (pin 10), MOSI (pin 11), MISO (pin 12), SCK (pin 13)
-
-**Return audio (1 signal, TBD):** XMOS TX data line → Teensy (candidate: pin 9 as SAI1_RX_DATA2)
 
 ---
 

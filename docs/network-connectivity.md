@@ -228,8 +228,160 @@ Main Loop (low priority):
   +-- UDP/TCP socket operations (QNEthernet event loop)
   +-- RTP/PTP message processing (async)
   +-- mDNS daemon (polled, ~100 ms interval)
-  +-- MIDI parsing (USB host ISR + SPI0 XMOS polling)
+  +-- MIDI parsing (USB host ISR)
   +-- SD card writes (ring buffer -> SDIO DMA)
   +-- UI updates (encoder/button debounce, display UART)
   +-- NeoPixel updates (if needed)
 ```
+
+------
+
+## 9. DAW Connectivity
+
+With the XMOS XU216 USB audio bridge removed, Ethernet becomes the sole digital audio path between MIXTEE and a DAW. MIXTEE speaks standard AES67, so any compliant virtual soundcard on the host computer can receive and send audio — no companion app required.
+
+### 9.1 DAW Usage Scenarios
+
+| Scenario | Direction | Latency | Priority |
+|----------|-----------|---------|----------|
+| Multitrack recording | MIXTEE → DAW (16 ch) | One-way ~5–10 ms | Core |
+| Stem/playback return | DAW → MIXTEE (8 ch) | One-way ~5–10 ms | Core |
+| Live monitoring | Hardware path (ADC → DSP → DAC) | N/A | Already solved |
+| Plugin insert (send/return) | Bidirectional | Round-trip ~10–20 ms | Stretch goal |
+
+Live monitoring never touches the network — it stays on the hardware audio path through the codecs and Teensy DSP, so latency is sub-millisecond regardless of network configuration.
+
+### 9.2 Network Stream Layout (16-in / 8-out)
+
+**MIXTEE TX (to DAW) — 16 channels in 2 streams:**
+
+| Stream ID | Channels | Content |
+|-----------|----------|---------|
+| `adc-1-8` | 8 | Pre-mix ADC inputs 1–8 (codecs U1 + U2, SAI1) |
+| `adc-9-16` | 8 | Pre-mix ADC inputs 9–16 (codecs U3 + U4, SAI2) |
+
+**MIXTEE RX (from DAW) — 8 channels in 1 stream:**
+
+| Stream ID | Channels | Content |
+|-----------|----------|---------|
+| `return-1-8` | 8 | DAW playback returns routed into mixer |
+
+**Total bandwidth:**
+
+- TX: 16 ch × 48 kHz × 24 bit × 1.1 overhead ≈ 20.3 Mbps
+- RX: 8 ch × 48 kHz × 24 bit × 1.1 overhead ≈ 10.1 Mbps
+- **Bidirectional total: ~30.4 Mbps** (well within 100 Mbps full-duplex)
+
+Two separate TX streams let a laptop subscribe to only one 8-channel group if full 16-channel capture isn't needed, halving host-side bandwidth and buffer requirements.
+
+### 9.3 Full AES67 Compliance
+
+The existing network plan (§5) describes "AES67-style RTP." For DAW interoperability with standard virtual soundcards, MIXTEE must implement the full AES67 discovery and session stack:
+
+#### SDP (Session Description Protocol, RFC 4566)
+
+Each stream is described by a text SDP blob. Required fields:
+
+```
+v=0
+o=- <session-id> <version> IN IP4 <device-ip>
+s=MIXTEE adc-1-8
+c=IN IP4 <multicast-group-or-unicast-ip>
+t=0 0
+m=audio <port> RTP/AVP 96
+a=rtpmap:96 L24/48000/8
+a=ptime:1
+a=ts-refclk:ptp=IEEE1588-2008:<ptp-grandmaster-id>
+a=mediaclk:direct=0
+```
+
+Key points:
+- Payload type `L24` (linear 24-bit PCM), dynamic PT 96–127 assigned via SDP
+- `ptime:1` — 1 ms packet time (48 samples per channel)
+- `ts-refclk` references the PTP grandmaster clock
+- One SDP per stream (3 total: `adc-1-8`, `adc-9-16`, `return-1-8`)
+
+#### SAP (Session Announcement Protocol, RFC 2974)
+
+SAP is the primary discovery mechanism for AES67 devices:
+
+- MIXTEE multicasts its SDP blobs to **239.255.255.255:9875** (SAP well-known address)
+- Announcement interval: every 30 seconds per stream (configurable)
+- Each SAP packet: 8-byte header + SDP payload (~200–300 bytes per stream)
+- Virtual soundcards on the DAW host listen on this multicast group and auto-discover MIXTEE streams
+
+#### PTP IEEE 1588v2 (Media Profile for AES67)
+
+- PTP domain: **0** (AES67 default)
+- Announce interval: 1 s (log₂ = 0)
+- Sync interval: 125 ms (log₂ = −3)
+- Delay request interval: 125 ms (log₂ = −3)
+- MIXTEE is PTP grandmaster on the studio LAN (consistent with §4)
+
+**PTP accuracy caveat:** DP83825I has no hardware timestamping. Software PTP via Teensy GPT timer gives ~10–100 µs accuracy — sufficient for 1 ms packet jitter buffers but not nanosecond-grade AES67. For studio use with a single MIXTEE on a quiet LAN, this is acceptable. Professional AES67 endpoints with hardware PTP will still sync, but may report higher offset than usual.
+
+#### RTP Payload Format
+
+- Payload type: L24 (24-bit linear PCM, network byte order)
+- Max payload: 1460 bytes (fits standard 1500 MTU Ethernet frame)
+- Packet time: 1 ms = 48 samples/channel
+- 8-channel stream: 48 × 8 × 3 bytes = **1152 bytes/packet** (fits in one Ethernet frame)
+- SSRC: unique per stream, stable across session lifetime
+- Sequence numbers: monotonically increasing, wrapping at 2¹⁶
+
+#### Discovery Mechanism Summary
+
+| Mechanism | Purpose | Scope |
+|-----------|---------|-------|
+| SAP/SDP | AES67 stream discovery for DAW virtual soundcards | DAW interop |
+| mDNS/DNS-SD (`_jfa-*`) | Device-to-device discovery within JFA ecosystem | JFA ecosystem |
+
+Both mechanisms run simultaneously. SAP/SDP ensures any AES67-compliant virtual soundcard can find MIXTEE streams without custom configuration.
+
+### 9.4 Recommended Virtual Soundcards
+
+**No companion app will be built.** MIXTEE speaks standard AES67, so users install an existing virtual soundcard on their DAW host.
+
+#### Linux — PipeWire (built-in, recommended)
+
+PipeWire 1.1+ has native AES67 support via `pipewire-module-rtp-source` and `pipewire-module-rtp-sink`:
+
+- Auto-discovers MIXTEE streams via SAP — zero configuration
+- Creates virtual ALSA / JACK / PulseAudio devices; any DAW (Ardour, Reaper, Bitwig) sees them natively
+- Verified interop with Dante and RAVENNA devices
+- Ships with most modern Linux distributions (Fedora, Ubuntu 24.04+, Arch)
+
+**Fallback:** [aes67-linux-daemon](https://github.com/bondagit/aes67-linux-daemon) — GPL-licensed, provides a web UI and REST API, based on the Merging Technologies RAVENNA/AES67 ALSA driver. Good option for distributions still on PulseAudio.
+
+#### macOS — AES67 macOS Driver (open-source, beta)
+
+[AES67_macos_Driver](https://github.com/maxajbarlow/AES67_macos_Driver) — Core Audio HAL plugin:
+
+- Up to 128 channels, Apple Silicon native
+- Installs to `/Library/Audio/Plug-Ins/HAL/`, no kernel extension needed (AudioServerPlugIn architecture)
+- ~95% complete as of 2025; limited real-world validation — test before relying on it for production sessions
+
+**Commercial fallback:** Merging RAVENNA Virtual Audio Device, Lawo R3LAY VSC.
+
+#### Windows — Limited open-source options
+
+- [DIGISYN VSC](https://github.com/Digisynthetic/Digisyn-Link-VSC) — open-source AES67 virtual soundcard, WDM + ASIO support, early-stage development
+- **Commercial options:** DIGISYN VSC (commercial release), Lawo JADE VSC (64 ch, WDM + ASIO), Merging MAD, h7r AES67 VSD
+- No mature open-source solution exists yet for Windows — commercial options are recommended for reliable DAW use
+
+#### Cross-platform utility — GStreamer
+
+GStreamer has full RTP/PTP infrastructure built in and can receive/send AES67 streams. Useful for testing and bridging (e.g., piping MIXTEE audio into a recording pipeline), but it does not create a virtual soundcard device visible to DAWs.
+
+### 9.5 Firmware Impact Summary
+
+| Component | What it does | CPU impact |
+|-----------|-------------|------------|
+| RTP packetizer | Copies post-ADC samples into 2 TX ring buffers per audio callback | ~1% |
+| RTP depacketizer | Reads Ethernet RX into return ring buffer in main loop | ~1% |
+| SAP/SDP announcer | Periodic multicast of SDP blobs (~200 bytes/stream every 30 s) | <0.5% |
+| Return audio path | Ethernet RX → ring buffer → DSP memory (no SAI data line needed) | Negligible |
+
+**Total CPU addition: ~1–3%**, within the existing 40% total budget from §Feasibility Assessment.
+
+The return audio path is pure memory — DAW playback arrives via Ethernet, gets depacketized into a ring buffer, and the DSP reads from that buffer during the audio callback. No codec SAI slot is consumed for return channels.

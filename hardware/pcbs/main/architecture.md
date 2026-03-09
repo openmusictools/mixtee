@@ -44,62 +44,6 @@
 - Provides stable mid-rail reference for AC-coupled signal paths
 - OPA1678 rail-to-rail output gives ~3.5Vpp usable swing
 
-### PC USB-C Ground
-
-- GND connected to system GND through ferrite bead to reduce computer-injected noise
-
----
-
-## XMOS XU216 USB Audio Bridge
-
-Dedicated USB Audio Class 2 bridge providing 24-in / 8-out multichannel audio + USB MIDI to the PC over a single USB-C connection. See [usb-audio.md](../../docs/usb-audio.md) for full architecture.
-
-### Chip
-
-- **XU216-256-TQ128-C20** — 128-pin TQFP, 256 KB RAM, 16 cores, 2000 MIPS
-- Open-source firmware: [xmos/sw_usb_audio](https://github.com/xmos/sw_usb_audio)
-
-### TDM Passive Tap
-
-The XMOS listens to both TDM buses as a slave — high-Z CMOS inputs tapping existing signals:
-
-- SAI1: BCLK (pin 21), LRCLK (pin 20), RX_DATA0 (pin 8), RX_DATA1 (pin 32), TX_DATA0 (pin 7)
-- SAI2: BCLK (pin 4), LRCLK (pin 3), RX_DATA0 (pin 5), RX_DATA1 (pin 34)
-- Total: 9 signals, all receive-only, no bus contention
-
-### SPI Control Bus (MIDI Forwarding)
-
-SPI0 (pins 10–13) connects Teensy ↔ XMOS for USB MIDI message exchange. Teensy is SPI master; XMOS is SPI slave. Polled at ~1 kHz.
-
-### Return Audio (PC → Mixer)
-
-8 channels from DAW playback. Data line TBD — candidates: pin 9 (SAI1_RX_DATA2), SAI3, or SPI DMA. Validate during breadboard Phase 1.
-
-### USB Connection
-
-PC USB-C D+/D- routed to XMOS (not Teensy). Teensy native USB available via debug header for firmware updates.
-
-### Power
-
-- Core: 1.0V LDO (AP2112K-1.0 or equiv.) from 3.3V or 5V rail, ~150 mA
-- I/O: 3.3V shared rail, ~50 mA
-- Decoupling: 0.1 µF on each VDD/VDDIO pin (~10 caps)
-
-### Clocking
-
-- 24 MHz crystal — XMOS core PLL reference
-- 24.576 MHz crystal — audio PLL reference (or derived from Teensy MCLK)
-- XMOS runs in TDM slave / USB adaptive mode — locks to Teensy's BCLK
-
-### Firmware Storage
-
-- W25Q32 QSPI flash (4 MB) — stores XMOS application firmware
-- Connected via XMOS QSPI port (dedicated pins, not shared with Teensy QSPI)
-
-### ESD Protection
-
-- USBLC6-2 on PC USB-C D+/D- lines (between connector and XMOS)
-
 ---
 
 ## TCA9548A I2C Mux
@@ -153,13 +97,33 @@ Bidirectional I2C isolator on SDA/SCL lines. Connects between TCA9548A mux outpu
 
 GND_ISO exists on the Main Board only as small copper islands around isolator Side 2 output pins and FFC pads. **≥1 mm clearance** between GND and GND_ISO copper on all layers. Keep MEJ2S0505SC (switching DC-DC) physically separated from Si8662BB signal pins to minimize switching noise coupling.
 
-### XMOS TDM Tap
 
-The XMOS passive TDM tap remains on the Main Board digital side, tapping signals **before** the isolators. No change to XMOS connectivity — it sees the same pre-isolation TDM signals as before.
+---
 
-### PC USB-C Ground
+## ESP32-S3 Reflash Circuit
 
-No USB isolator needed. With galvanic isolation at the FFC boundary, PC USB noise reaches only the digital domain. The existing ferrite bead on USB GND provides additional filtering.
+Teensy pins 9 and 10 provide hardware control over the ESP32-S3 display module's boot mode, enabling firmware updates from SD card without user intervention.
+
+### Circuit
+
+| Teensy Pin | Signal | Connection | Notes |
+|-----------|--------|------------|-------|
+| 9 | ESP32_EN | Module EN pin | Active-high enable (module has internal pull-up). Teensy drives LOW to hold reset, releases (HIGH-Z or HIGH) to boot. |
+| 10 | ESP32_GPIO0 | Module GPIO0/BOOT pin | Drive LOW before EN release → UART bootloader mode. Leave HIGH/float → normal app boot. |
+
+### Reflash Sequence (triggered by SD card update)
+
+1. Teensy asserts ESP32_GPIO0 LOW (pin 10)
+2. Teensy pulses ESP32_EN LOW for ~100 ms, then releases (pin 9)
+3. ESP32-S3 boots into UART download mode
+4. Teensy streams `display.bin` via Serial1 at 921600 baud using `esp-serial-flasher` library
+5. Flash time: ~16 seconds for 1.5 MB binary
+6. Teensy releases ESP32_GPIO0 (HIGH-Z), pulses ESP32_EN to reboot into normal app mode
+7. Normal display engine handshake resumes
+
+### Header Change
+
+Display header expanded from 4-pin to 6-pin JST-PH to carry ESP32_EN and ESP32_GPIO0 signals. See [connections.md](connections.md#esp32-s3-display-header-6-pin).
 
 ---
 
@@ -179,7 +143,7 @@ See [Input Mother Board architecture](../input-mother/architecture.md) for TS5A3
 
 - **SAI1 (TDM1):** pins 7, 8, 20, 21, 23, 32
 - **SAI2 (TDM2):** pins 2, 3, 4, 5, 33 (bottom), 34 (bottom)
-- **SPI0 (XMOS control):** pins 10, 11, 12, 13
+- **SPI0:** pins 11, 12, 13 *(spare — XMOS removed)*; pin 10 reassigned to ESP32_GPIO0
 - **I2C (Wire):** pins 18, 19
 - **Serial3 RX (MIDI IN):** pin 15
 - **Serial4 TX (MIDI OUT):** pin 17
@@ -193,7 +157,8 @@ See [Input Mother Board architecture](../input-mother/architecture.md) for TS5A3
 |-----|----------|
 | 0, 1 | Serial1 — ESP32-S3 display UART |
 | 6 | NeoPixel data out |
-| 9 | *(candidate: XMOS return audio — SAI1_RX_DATA2)* |
+| 9 | ESP32_EN (display reset) |
+| 10 | ESP32_GPIO0 (display boot mode) |
 | 14 | *(spare — was RA8875 RESET)* |
 | 16 | Encoder 3 (Edit) push |
 | 22 | MCP23017 INT |
@@ -208,7 +173,7 @@ See [Input Mother Board architecture](../input-mother/architecture.md) for TS5A3
 | 40 | Power button sense |
 | 41 | KEEP_ALIVE |
 
-**Total edge pins:** 42. **Consumed by peripherals:** 22 (SAI ×12, SPI0/XMOS ×4, I2C ×2, Serial1/ESP32 ×2, Serial3 RX ×1, Serial4 TX ×1). **GPIO:** 14 used + 1 candidate (pin 9), 6 spare (pins 14, 30, 35, 37, 38, 39).
+**Total edge pins:** 42. **Consumed by peripherals:** 18 (SAI ×12, I2C ×2, Serial1/ESP32 ×2, Serial3 RX ×1, Serial4 TX ×1). **GPIO:** 15 used (13 original + 2 ESP32 boot control), 9 spare (pins 11, 12, 13, 14, 30, 35, 37, 38, 39).
 
 ---
 

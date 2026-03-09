@@ -2,7 +2,7 @@
 
 **Open-source 16-input / 8-output digital mixer with MIDI control and 16-track recording.**
 
-Built around the Teensy 4.1, MIXTEE is a compact desktop mixer designed for electronic musicians, synth enthusiasts, and DIY audio builders. It handles mixing, monitoring, MIDI control, multitrack recording to SD card, and 24-in/8-out USB audio — all in a 260 × 100 × 50 mm enclosure.
+Built around the Teensy 4.1, MIXTEE is a compact desktop mixer designed for electronic musicians, synth enthusiasts, and DIY audio builders. It handles mixing, monitoring, MIDI control, multitrack recording to SD card, and 16-in/8-out AES67 network audio — all in a 260 × 100 × 50 mm enclosure.
 
 ![MIXTEE Layout](hardware/mixtee-layout.jpg)
 
@@ -11,14 +11,14 @@ Built around the Teensy 4.1, MIXTEE is a compact desktop mixer designed for elec
 - **16 mono inputs** (8 stereo pairs) with per-channel gain, pan, mute, solo
 - **8 outputs** (master stereo + 3 aux/FX sends)
 - **16-track recording** direct to SD card (48 kHz / 24-bit WAV, 8 MB PSRAM buffer)
-- **USB audio interface** (24-in / 8-out via XMOS XU216, USB Audio Class 2)
+- **DAW connectivity** (16-in / 8-out via AES67 over Ethernet)
 - **MIDI control** via 2× USB host ports + TRS MIDI in/out
 - **4.3" TFT display** with 3 dedicated encoders (NavX, NavY, Edit) and 16 illuminated CHOC keys
 - **Compact form factor** — 260 × 100 × 50 mm, all controls on top, all audio on back
 
 ## Architecture
 
-MIXTEE uses four AK4619VN codecs on two TDM buses, driven by the Teensy 4.1's Cortex-M7 at 600 MHz. The analog front-end features OPA1678 op-amps with Sallen-Key anti-alias and reconstruction filters. Power is supplied via a dedicated USB-C port (5V/5A USB PD, fallback 5V/3A) with a separate USB-C for computer data, eliminating ground loop noise.
+MIXTEE uses four AK4619VN codecs on two TDM buses, driven by the Teensy 4.1's Cortex-M7 at 600 MHz. The analog front-end features OPA1678 op-amps with Sallen-Key anti-alias and reconstruction filters. Power is supplied via USB-C (5V/5A USB PD, fallback 5V/3A). DAW connectivity uses AES67 network audio over Ethernet (100 Mbps, DP83825I PHY on Teensy).
 
 ## Repository Structure
 
@@ -63,11 +63,11 @@ mixtee/
 | [System Topology](docs/system-topology.md) | Board summary, connector summary, back panel layout, mechanical mounting |
 | [Hardware](docs/hardware.md) | Codec architecture, power system, BOM tables, target specs |
 | [Pin Mapping](docs/pin-mapping.md) | Teensy 4.1 pin assignments, GPIO budget |
-| [Features](docs/features.md) | Mixing, routing, recording, MIDI control, USB audio |
+| [Features](docs/features.md) | Mixing, routing, recording, MIDI control, DAW audio |
 | [Firmware](docs/firmware.md) | Software architecture, audio pipeline, state management |
 | [UI Architecture](docs/ui-architecture.md) | Display hierarchy, navigation model, screen layouts |
 | [Enclosure](docs/enclosure.md) | Physical dimensions, panel layouts, connector placement |
-| [USB Audio](docs/usb-audio.md) | XMOS XU216 USB audio bridge architecture (24ch multichannel) |
+| [Network Connectivity](docs/network-connectivity.md) | AES67 network audio, DAW integration, discovery protocols |
 | [Connector Parts](docs/connector-parts.md) | Connector MPN index |
 | [PCB Design Rules](docs/pcb-design-rules.md) | Trace widths, clearances, via sizes, stackup, manufacturing rules |
 

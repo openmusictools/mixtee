@@ -33,6 +33,42 @@ MIXTEE is an open-source 16-input / 8-output digital mixer built around the Teen
 | HP Board | `hardware/pcbs/hp/` | Not started |
 | Power Board | `hardware/pcbs/power/` | Off-the-shelf module |
 
+## Common Commands (Windows)
+
+| Tool | Path |
+|------|------|
+| kicad-cli | `D:\programs\KiCad\9.0\bin\kicad-cli.exe` |
+| pcbnew Python | `D:\programs\KiCad\9.0\bin\python.exe` |
+
+```bash
+# DRC check (fill zones first via MCP or pcbnew Python — kicad-cli doesn't auto-fill)
+"D:\programs\KiCad\9.0\bin\kicad-cli.exe" pcb drc --format json --severity-all --units mm -o drc-report.json module.kicad_pcb
+
+# Gerber export (2-layer board)
+"D:\programs\KiCad\9.0\bin\kicad-cli.exe" pcb export gerbers \
+  -l "F.Cu,B.Cu,F.SilkS,B.SilkS,F.Mask,B.Mask,Edge.Cuts" \
+  --subtract-soldermask -o ./gerbers/ module.kicad_pcb
+
+# Drill file export
+"D:\programs\KiCad\9.0\bin\kicad-cli.exe" pcb export drill -o ./gerbers/ module.kicad_pcb
+
+# PDF export for review
+"D:\programs\KiCad\9.0\bin\kicad-cli.exe" pcb export pdf \
+  -l "F.Cu,B.Cu,F.SilkS,B.SilkS,F.Mask,B.Mask,Edge.Cuts" \
+  --drill-shape-opt 2 -o ./module.pdf module.kicad_pcb
+
+# DSN export for FreeRouting (no CLI support — must use pcbnew Python)
+"D:\programs\KiCad\9.0\bin\python.exe" -c "import pcbnew; b=pcbnew.LoadBoard('module.kicad_pcb'); pcbnew.ExportSpecctraDSN(b,'module.dsn')"
+```
+
+## MCP Servers
+
+Two KiCad MCP servers are configured:
+- **kicadmixelpixx** — generation, placement, routing, DRC, Gerber export (SWIG backend, requires KiCad 9.0+). Gerber export via MCP may produce empty files — use kicad-cli instead.
+- **kicadseed** — schematic analysis, netlist reading, pin tracing, design review.
+
+Prefer MCP tools over raw Python/CLI when possible. See `docs/pcbs-workflow.md` for the full 8-stage pipeline (spec → SKiDL → ERC → placement → feedback → routing → Gerber → PDF).
+
 ## Documentation Loading Guide
 
 **PCB work on a specific board:**
@@ -60,11 +96,15 @@ MIXTEE is an open-source 16-input / 8-output digital mixer built around the Teen
 
 **I2C bus topology:** Teensy Wire (pins 18/19) → TCA9548A mux (0x70, main board) → ISO1541 (per channel) → codec boards; MCP23008 (0x21, Board 1-top) controls TS5A3159 mute + codec PDN + headphone detect; MCP23017 (0x20, Key PCB) sits upstream for key scanning.
 
-**Key hardware ICs:** AK4619VN (codec), XMOS XU216 (USB audio bridge — 24-in/8-out UAC2, main board), TCA9548A (I2C mux), Si8662BB-B-IS1 (TDM isolator), ISO1541 (I2C isolator), MEJ2S0505SC (isolated DC-DC), MCP23008 (mute/PDN/HP detect, Board 1-top), MCP23017 (key matrix, Key PCB), FE1.1s (USB hub, IO Board), STUSB4500 (USB PD sink), TPS22965 (load switch). **Off-the-shelf modules:** STUSB4500 breakout (power), TPA6132/MAX97220 breakout (headphone amp, on HP Board), ESP32-S3 integrated display module (UART link to Teensy, runs LVGL).
+**Key hardware ICs:** AK4619VN (codec), TCA9548A (I2C mux), Si8662BB-B-IS1 (TDM isolator), ISO1541 (I2C isolator), MEJ2S0505SC (isolated DC-DC), MCP23008 (mute/PDN/HP detect, Board 1-top), MCP23017 (key matrix, Key PCB), FE1.1s (USB hub, IO Board), STUSB4500 (USB PD sink), TPS22965 (load switch). **Off-the-shelf modules:** STUSB4500 breakout (power), TPA6132/MAX97220 breakout (headphone amp, on HP Board), ESP32-S3 integrated display module (6-pin header: UART + EN + GPIO0 boot control; runs device-agnostic LVGL display engine).
 
-**Connectivity:** 24-in/8-out USB Audio Class 2 via XMOS XU216 (PC USB-C on main board). Native Ethernet (DP83825I PHY on Teensy) via RJ45 MagJack on IO Board. USB MIDI host via FE1.1s hub (IO Board). MIDI IN/OUT via 3.5mm TRS Type A (IO Board).
+**Display engine:** ESP32-S3 is a generic widget renderer — no device-specific knowledge. Teensy loads UI layout from `ui.json` on SD card, streams binary widget commands (COBS-encoded, CRC16) over Serial1 at 921600 baud. Widget types: Container, Label, Meter, Knob, Slider, Bar, Button, Icon, Rect, Page. Touch events forwarded as coordinates. See `docs/display-engine.md`.
 
-**PCB architecture:** 7 unique PCB designs, 11 physical boards + 2 off-the-shelf modules. See `docs/system-topology.md`.
+**SD card update:** Single update mechanism for all firmware (Teensy + ESP32 + UI layout). User copies `/UPDATE/` folder to SD card → power on → auto-update. FlasherX for Teensy self-programming, esp-serial-flasher for ESP32 reflash via UART (pins 9/10 control EN/GPIO0). See `docs/sd-update.md`.
+
+**Connectivity:** 16-in/8-out AES67 network audio via Ethernet (DP83825I PHY on Teensy, RJ45 MagJack on IO Board). USB MIDI host via FE1.1s hub (IO Board). MIDI IN/OUT via 3.5mm TRS Type A (IO Board). See `docs/network-connectivity.md` §9 for DAW integration.
+
+**PCB architecture:** 7 unique PCB designs, 11 physical boards + 1 off-the-shelf power module. See `docs/system-topology.md`.
 
 ## Key Documentation Cross-References
 
@@ -77,6 +117,8 @@ MIXTEE is an open-source 16-input / 8-output digital mixer built around the Teen
 | Power budget | `docs/hardware.md` | `hardware/bom.csv`, `docs/enclosure.md` |
 | Connector pinouts | Board `connections.md` files | `docs/system-topology.md` (connector summary) |
 | Board definitions | Board `README.md` files | `docs/system-topology.md` (board summary) |
+| Display protocol | `docs/display-engine.md` | `docs/ui-architecture.md`, `docs/firmware.md` |
+| SD card update | `docs/sd-update.md` | `docs/features.md`, `docs/firmware.md` |
 
 ## When Editing Documentation
 
@@ -91,7 +133,7 @@ MIXTEE is an open-source 16-input / 8-output digital mixer built around the Teen
 - **Audio:** Block-based DSP (128 samples @ 48 kHz = 2.67 ms blocks), runs in timer interrupt
 - **Real-time constraint:** Audio callback preempts everything. No blocking operations, no long SPI transactions, no malloc in the audio path.
 - **UI framework:** Hierarchical View → Page → Module → Component → Parameter model (see `docs/ui-architecture.md`)
-- **Key libraries:** PJRC Audio, Adafruit NeoPixel, USBHost_t36, SdFat, Bounce, Encoder (display handled by ESP32-S3 module via UART)
+- **Key libraries:** PJRC Audio, Adafruit NeoPixel, USBHost_t36, SdFat, Bounce, Encoder, FlasherX (Teensy self-update), esp-serial-flasher (ESP32 reflash), ArduinoJson (ui.json parsing)
 
 ## Licensing
 

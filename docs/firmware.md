@@ -17,12 +17,15 @@
 - **Audio:** PJRC Audio Library (AudioInputTDM, AudioOutputTDM, AudioMixer4)
 - **Encoders:** PJRC Encoder Library (quadrature decoding)
 - **Buttons:** PJRC Bounce Library (debouncing)
-- **Display:** Offloaded to ESP32-S3 integrated display module (LVGL); Teensy sends meter data + parameter state over Serial1 UART (pins 0/1)
+- **Display:** Offloaded to ESP32-S3 integrated display module (LVGL display engine); Teensy streams binary widget commands over Serial1 UART (pins 0/1) at 921600 baud; see [Display Engine](display-engine.md)
 - **NeoPixels:** Adafruit NeoPixel or FastLED (level-shifted data output)
-- **USB Audio Bridge:** XMOS XU216 handles multichannel USB audio (24-in/8-out); Teensy communicates MIDI via SPI0 (pins 10–13)
+- **Network Audio:** AES67 over Ethernet (16-in / 8-out to DAW); see [network-connectivity.md](network-connectivity.md) §9
 - **MIDI:** USBHost_t36 (Teensy USB Host library)
 - **SD Card:** SdFat (Bill Greiman) with SDIO support (built into Teensyduino)
 - **PSRAM:** extmem allocation (Teensy core EXTMEM keyword for PSRAM-backed buffers)
+- **FlasherX** (MIT): Teensy 4.x self-programming from SD card — reads `.hex` file, writes to flash, reboots
+- **esp-serial-flasher** (Espressif, Apache 2.0): Embedded host library for flashing ESP32 targets over UART — Teensy drives ESP32_EN/GPIO0 pins to enter bootloader, streams `display.bin` at 921600 baud
+- **ArduinoJson:** Streaming JSON parser for `ui.json` (UI layout definitions loaded from SD card)
 
 ------
 
@@ -85,18 +88,18 @@ Profile with `AudioProcessorUsage` and `AudioProcessorUsageMax` during Phase 1 b
 
 - **Audio callback:** 44.1/48 kHz, real-time priority
 - **Meter analysis:** Every audio block (peak + RMS computed inline in ChannelStrip)
-- **UART meter transmission:** Teensy sends 24 peak/RMS float pairs to ESP32-S3 at 30 Hz (~6 KB/s); parameter state sent on change
+- **UART meter transmission:** Teensy sends METER_BATCH commands (24 channels × 6 bytes = 144 bytes/frame) to ESP32-S3 at 30 Hz (~4.6 KB/s with COBS framing); parameter state sent on change via SET_VALUE/SET_TEXT commands
 - **Input polling:** Encoders (interrupt-driven), buttons (Bounce debounce), MIDI (event-driven)
 
 ### Priority Model
 
 The PJRC Audio Library runs on a timer interrupt and preempts all other code. The firmware must be structured so that no non-audio task holds shared resources (memory) long enough to cause audio buffer underruns. Key considerations:
 
-- **Display communication** is handled via Serial1 UART (pins 0/1) to the ESP32-S3 display module — lightweight, non-blocking, DMA-capable. No SPI bus contention with display rendering. The Teensy sends meter data (24 float pairs at 30 Hz) and parameter state changes; the ESP32-S3 handles all rendering independently.
+- **Display communication** is handled via Serial1 UART (pins 0/1) to the ESP32-S3 display engine at 921600 baud — lightweight, non-blocking, DMA-capable. No SPI bus contention with display rendering. The Teensy streams binary widget commands (COBS-encoded frames with CRC16); the ESP32-S3 is a generic LVGL rendering engine with no device-specific knowledge. See [Display Engine](display-engine.md) for protocol details.
 - **SD card writes** use SDIO DMA and run from the main loop at lowest priority. The PSRAM ring buffer decouples recording from real-time audio.
 - **NeoPixel updates** are fast (8 pixels, microseconds) and non-blocking.
 - **MIDI parsing** is event-driven via USBHost_t36 callbacks (for USB MIDI controllers) — lightweight and non-blocking. The MIDI handler resolves `MIDI channel → channel group` (Ch 1: inputs 1–8, Ch 2: inputs 9–16, Ch 3: outputs), then `CC number → parameter + channel offset`. Uniform parsing, no special cases per group.
-- **XMOS MIDI exchange** is polled from the main loop via SPI0 (pins 10–13) at ~1 kHz. USB MIDI messages from the PC arrive at the XMOS and are forwarded to Teensy over SPI; Teensy sends outbound MIDI to XMOS for USB transmission to PC. Adds <1 ms latency vs. native USB MIDI. The same CC parsing logic handles both USB host MIDI (controllers) and PC MIDI (via XMOS SPI).
+- **Network audio (AES67)** runs in the main loop — RTP encode/decode, SAP/SDP announcements, and PTP synchronization are handled via QNEthernet. CPU impact ~1–3%. See [network-connectivity.md](network-connectivity.md) §9 for details.
 
 ### Noise Mitigation (Firmware)
 
@@ -104,3 +107,55 @@ The PJRC Audio Library runs on a timer interrupt and preempts all other code. Th
 - **Smooth parameter changes** (no abrupt steps in gain/pan — use ramping over 1-2 audio blocks)
 - **USB host power management** (ability to power-cycle ports via software)
 - **Pop suppression sequencing:** On boot, MCP23008 (address 0x21, on Board 1-top, accessed via TCA9548A Ch 0 → ISO1541) mute outputs default low (muted). After DSP is initialized and stable (~500 ms), firmware sets GP0–GP3 high to unmute. On shutdown, set GP0–GP3 low before power loss. MCP23008 also provides codec PDN control (GP4–GP5) and headphone detect input (GP6).
+
+------
+
+## SD Card Update Mechanism
+
+MIXTEE uses a single SD card update mechanism for all firmware components — no separate flashing tools required. See [SD Update](sd-update.md) for the full specification.
+
+### Boot Sequence
+
+```
+Power on → Teensy boots
+  ↓
+Check SD for /UPDATE/manifest.json
+  ↓ (found)                              ↓ (not found)
+Verify device ID + checksums             Normal boot
+  ↓
+Teensy self-update (FlasherX)
+  → reads teensy.hex from SD
+  → writes to flash (upper first, vector table last)
+  → reboots
+  ↓
+ESP32 reflash (esp-serial-flasher)
+  → assert GPIO0 LOW (pin 10)
+  → pulse EN LOW/HIGH (pin 9)
+  → stream display.bin over Serial1 @ 921600 baud
+  → ~16 seconds for 1.5 MB binary
+  → reboot ESP32 into normal mode
+  ↓
+Copy ui.json → /SYSTEM/ui.json
+  ↓
+Rename /UPDATE/ → /UPDATE_DONE/
+  ↓
+Normal boot: load ui.json → stream widgets to display → run
+```
+
+### Version Tracking
+
+Teensy EEPROM stores current versions (teensy firmware, display firmware, ui layout). Only components with version mismatches are updated. The `/UPDATE/manifest.json` file contains target versions and SHA-256 checksums for each component.
+
+### Display Engine Boot
+
+After normal boot (or post-update reboot):
+
+1. Teensy sends HANDSHAKE command over Serial1
+2. ESP32 responds with READY + screen capabilities (width, height, color depth, touch support)
+3. Teensy parses `/SYSTEM/ui.json` from SD card (~5 ms with ArduinoJson streaming parser)
+4. Teensy translates JSON widget definitions to binary CREATE_WIDGET commands → streams to ESP32 (~200 ms)
+5. ESP32 builds LVGL widget tree; all pages created at startup, switched via SET_VISIBLE
+6. Teensy enters normal operation: METER_BATCH at 30 Hz, SET_VALUE/SET_TEXT on parameter change
+7. ESP32 forwards touch events (TOUCH_DOWN/UP/DRAG) back to Teensy as coordinate-based events
+
+Total boot-to-display time: <500 ms after Teensy boot completes.

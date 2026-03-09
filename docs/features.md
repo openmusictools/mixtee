@@ -36,11 +36,27 @@
 
 - Self-contained module: ESP32-S3 MCU + LCD + touch controller on one board
 - Resolution: 800×480 (Waveshare) or 480×272 (Elecrow) — wider aspect ratio suits horizontal channel strip layout
-- ESP32-S3 runs LVGL for all rendering; Teensy sends meter data + parameter state over UART (2 wires)
+- ESP32-S3 runs a **device-agnostic LVGL display engine** — no device-specific knowledge; reusable across MIXTEE, SYNTEE, and future devices
+- Teensy streams binary widget commands over UART at 921600 baud (COBS-encoded frames with CRC16); see [Display Engine](display-engine.md)
+- UI layout defined in `ui.json` on SD card — Teensy parses JSON, translates to binary protocol commands, streams to ESP32
+- 6-pin connection: UART TX/RX + ESP32_EN + GPIO0 (bootloader control) + 5V + GND
 - Per-channel strip width: 120 px × display height (mono pair occupies 2 strips)
 - Stereo-linked pairs occupy 2 slots but grouped visually
-- 30 Hz meter update rate over UART (~6 KB/s); parameter state sent on change
-- Frees SPI0 bus and 2 GPIO pins on Teensy (no display SPI bus contention)
+- 30 Hz meter update rate via METER_BATCH command (~4.6 KB/s); parameter state sent on change
+- Touch events forwarded from ESP32 to Teensy as coordinate-based events (ESP32 never interprets touch semantics)
+- Frees SPI0 bus on Teensy (no display SPI bus contention)
+
+### SD Card Update
+
+Single update mechanism for all firmware — no separate flashing tools required. See [SD Update](sd-update.md).
+
+- **User experience:** Copy update files to SD card → insert → power on → done
+- **Update package:** `/UPDATE/` folder on SD card containing `manifest.json`, `teensy.hex`, `display.bin`, `ui.json`
+- **Teensy self-update** via FlasherX library (reads .hex from SD, writes to flash, reboots)
+- **ESP32 reflash** via `esp-serial-flasher` library (Teensy drives ESP32_EN/GPIO0 pins to enter bootloader, streams binary over UART, ~16s)
+- **UI layout update:** `ui.json` copied to `/SYSTEM/ui.json` — no reflash needed for UI-only changes
+- Version tracking via Teensy EEPROM — only components with version mismatches are updated
+- Power-loss safe: FlasherX writes upper flash first, vector table last; HalfKay USB bootloader ROM is never overwritten (USB recovery always possible)
 
 ### Color Scheme
 
@@ -111,17 +127,17 @@ When navigating laterally past the last channel in a view, the Nav encoder cross
 
 ------
 
-## USB Audio Interface
+## DAW Audio (AES67 over Ethernet)
 
-MIXTEE provides **24-in / 8-out multichannel USB audio** over the dedicated PC USB-C port using an **XMOS XU216** USB Audio Class 2 bridge on the Main Board. The XMOS passively taps both TDM buses to capture all channels. Power comes from the separate PWR USB-C port, keeping computer noise off the power rails.
+MIXTEE provides **16-in / 8-out network audio** to any DAW via AES67 over the Ethernet port (RJ45 MagJack on IO Board, 100 Mbps). No USB audio bridge — MIXTEE speaks standard AES67, and users install an existing virtual soundcard on their DAW host.
 
-- **To PC (24 in):** 16 pre-mix ADC inputs + 8 post-mixer bus outputs — full multitrack into any DAW
-- **From PC (8 out):** DAW playback routed into the mixer (e.g. stems, backing tracks, click)
-- **Format:** 24-bit, 48 kHz (USB Audio Class 2)
-- **Composite device:** USB Audio + USB MIDI share the same USB-C connection (MIDI forwarded between XMOS and Teensy via SPI)
-- **OS support:** Class-compliant on macOS/Linux (plug and play); Thesycon ASIO driver on Windows (included in XMOS ref design)
+- **To DAW (16 in):** 16 pre-mix ADC inputs as 2× 8-channel AES67 streams
+- **From DAW (8 out):** DAW playback returns routed into mixer as 1× 8-channel AES67 stream
+- **Format:** 24-bit, 48 kHz, 1 ms packet time (L24 RTP)
+- **Discovery:** SAP/SDP for AES67 interop; mDNS/DNS-SD for JFA ecosystem
+- **OS support:** PipeWire (Linux, built-in); AES67 macOS Driver (beta); DIGISYN VSC (Windows, early-stage); commercial options available
 
-See [usb-audio.md](usb-audio.md) for full XMOS architecture and fallback options.
+See [network-connectivity.md](network-connectivity.md) §9 for stream layout, AES67 compliance details, and recommended virtual soundcards.
 
 ------
 

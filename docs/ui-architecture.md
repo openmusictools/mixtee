@@ -6,13 +6,86 @@
 
 ## Overview
 
-> **Display rendering runs on an ESP32-S3 integrated display module using LVGL, not on the Teensy.** The Teensy sends meter data (24 peak/RMS float pairs at 30 Hz) and parameter state changes over UART. The ESP32-S3 handles all screen rendering independently. The navigation model and UI hierarchy described below are unchanged — only the rendering target has moved off the Teensy.
+> **The ESP32-S3 is a device-agnostic LVGL display engine.** It has no knowledge of MIXTEE, channels, or mixing — it only knows how to render widgets. The Teensy is the brain: it reads UI definitions from `ui.json` on the SD card, translates them into binary widget commands, and streams them to the ESP32 over UART. This architecture is reusable across MIXTEE, SYNTEE, and future devices.
+
+> For the binary serial protocol specification, see [Display Engine](display-engine.md). For the SD card update mechanism, see [SD Update](sd-update.md).
 
 The MIXTEE display UI is built on a modular, hierarchical framework designed for two goals: fast access to the most-used mixing parameters (gain, level, mute) with minimal button presses, and extensibility so that community contributors can add new processing modules without reworking the navigation engine.
 
 The signal path is hardcoded in the DSP audio graph (fixed at compile time). UI modules provide windows into different points of that fixed graph — rearranging or adding modules on screen does not affect DSP processing order.
 
 No internal FX for now. The mixer does not include built-in effects (reverb, delay, compression). Aux sends route to external FX gear. Internal FX may be added in a future revision as additional modules.
+
+------
+
+## Display Engine Architecture
+
+### Rendering Split
+
+| Responsibility | Owner | Notes |
+|---------------|-------|-------|
+| UI layout definitions | `ui.json` on SD card | Parsed by Teensy at boot |
+| Widget creation commands | Teensy | Translates JSON → binary CREATE_WIDGET protocol |
+| LVGL widget rendering | ESP32-S3 display engine | Generic renderer, no device knowledge |
+| Meter data streaming | Teensy | METER_BATCH at 30 Hz (~4.6 KB/s) |
+| Parameter updates | Teensy | SET_VALUE/SET_TEXT/SET_STATE on change |
+| Touch input | ESP32-S3 → Teensy | Coordinate-based events (TOUCH_DOWN/UP/DRAG) |
+| Touch interpretation | Teensy | Maps coordinates to UI elements via widget bindings |
+
+### ui.json Format
+
+The UI layout is defined in a JSON file on the SD card (`/SYSTEM/ui.json`), loaded by the Teensy at boot. This is what makes the same display engine work for different devices — MIXTEE, SYNTEE, etc. each ship their own `ui.json`.
+
+```json
+{
+  "device": "MIXTEE",
+  "version": "1.0.0",
+  "display": { "width": 800, "height": 480 },
+  "colors": { "bg": "#000000", "fg": "#FFFFFF", "accent": "#FF0000" },
+  "pages": [
+    {
+      "id": 0, "name": "overview",
+      "widgets": [
+        { "id": 100, "type": "label", "x": 10, "y": 5, "w": 40, "h": 20, "text": "CH1" },
+        { "id": 101, "type": "bar", "x": 10, "y": 30, "w": 20, "h": 200, "min": 0, "max": 1000 },
+        { "id": 102, "type": "meter", "x": 35, "y": 30, "w": 15, "h": 200, "min": 0, "max": 1000 }
+      ]
+    }
+  ],
+  "bindings": {
+    "meters": [{ "channel": 0, "widget": 102 }],
+    "params": [{ "param": "ch1_gain", "widget": 110, "type": "value" }]
+  }
+}
+```
+
+**Key fields:**
+- `pages[]` — each page contains widget definitions with absolute positioning
+- `bindings.meters[]` — maps audio channel indices to meter widget IDs (for METER_BATCH routing)
+- `bindings.params[]` — maps Teensy-side parameter names to widget IDs (for SET_VALUE/SET_TEXT routing)
+
+**Size:** ~15–25 KB for full MIXTEE UI. ArduinoJson streaming parser handles this in ~5 ms.
+
+### Widget Types
+
+| Type | LVGL mapping | Use case |
+|------|-------------|----------|
+| Container | lv_obj | Grouping, backgrounds |
+| Label | lv_label | Channel names, values, headers |
+| Meter | lv_bar (vertical) | Level meters (peak + RMS) |
+| Knob | lv_arc | Gain, pan controls |
+| Slider | lv_slider (horizontal) | Pan sliders |
+| Bar | lv_bar (vertical) | EQ bands, send levels |
+| Button | lv_btn | Mute, solo, rec indicators |
+| Icon | lv_img | Status icons |
+| Rect | lv_obj + style | Colored rectangles, separators |
+| Page | lv_obj (screen) | Full-screen page containers |
+
+### Boot-Time Widget Creation
+
+All pages and widgets are created at startup via CREATE_WIDGET commands. Pages are switched at runtime via SET_VISIBLE — no dynamic widget creation during operation. This avoids LVGL memory fragmentation.
+
+The widget table on the ESP32 is a flat array indexed by widget ID (max ~128 entries), providing O(1) lookup for 30 Hz meter updates.
 
 ------
 

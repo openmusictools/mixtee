@@ -31,11 +31,6 @@ Dimensions: **260 mm** wide × **84.6 mm** deep (front to back). Outputs moved t
 
 ### Left zone — PC USB-C + SD + Display + Encoders (Main Board)
 
-**PC — USB-C (data only):**
-- PCB-mount USB-C receptacle on Main Board, protrudes through top panel cutout
-- USB Audio Class 2 (24-in/8-out via XMOS XU216) + USB MIDI composite device
-- Labeled "PC" on top panel
-
 **SD card slot** (left of display, vertically aligned with bottom edge of screen):
 - Full-size SD card socket, slot opens upward through top panel
 - SDIO routed from Teensy bottom pads 42–47

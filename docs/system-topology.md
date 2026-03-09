@@ -18,7 +18,7 @@ For detailed per-board documentation, see each board's directory under `hardware
 
 | ID | Name | Unique design | Instances | Layers | Active components | Domain | Details |
 |----|------|--------------|-----------|--------|-------------------|--------|---------|
-| M | Main Board | Yes | 1 | 4 | Teensy, XMOS XU216, 2× Si8662BB + 2× ISO1541 + 2× MEJ2S0505SC (isolation), 74LVC1G00 soft-latch, ADP7118 LDO | Digital | [README](../hardware/pcbs/main/README.md) |
+| M | Main Board | Yes | 1 | 4 | Teensy, 2× Si8662BB + 2× ISO1541 + 2× MEJ2S0505SC (isolation), 74LVC1G00 soft-latch, ADP7118 LDO | Digital | [README](../hardware/pcbs/main/README.md) |
 | IO | IO Board | Yes | 1 | 2 | FE1.1s hub, 6N138 MIDI, 2× TPS2051, RJ45 MagJack | Digital | [README](../hardware/pcbs/io/README.md) |
 | P | Power Module | Off-the-shelf | 1 | — | STUSB4500 USB PD breakout (purchased) | Digital | [README](../hardware/pcbs/power/README.md) |
 | HP | HP Board | Yes | 1 | 2 | TPA6132/MAX97220 breakout, volume pot, TRS jack | Analog (isolated) | [README](../hardware/pcbs/hp/README.md) |
@@ -47,7 +47,7 @@ For detailed per-board documentation, see each board's directory under `hardware
 | 1-top → O-top | JST-PH or FFC | 2.0 / 1.0 mm | 10 | ~80 mm | — (both analog) | [input-mother](../hardware/pcbs/input-mother/connections.md) |
 | 1-top → HP Board | JST-PH | 2.0 mm | 4 | ~40–60 mm | — (both analog) | [hp](../hardware/pcbs/hp/connections.md) |
 | Main ↔ Key PCB | JST-PH | 2.0 mm | 6 | ~30–40 mm | — (both digital) | [key](../hardware/pcbs/key/connections.md) |
-| Main ↔ Display | Per module | Varies | 8–10 | ~20 mm | — | [main](../hardware/pcbs/main/connections.md) |
+| Main ↔ Display | JST-PH | 2.0 mm | **6** | ~20 mm | — | [main](../hardware/pcbs/main/connections.md) |
 
 ------
 
@@ -68,7 +68,7 @@ Looking at the back panel (260 mm wide × 50 mm tall):
               ← outputs                    inputs →
 ```
 
-The PWR USB-C receptacle mounts on the **Power Board** — a small dedicated PCB on the far right of the back panel. Labeled "PWR" (power only, 5V/5A PD). A 2-pin cable carries 5V + GND from the Power Board to the Main Board. An **off-the-shelf screw-collar momentary push button** ("POWER") mounts next to the PWR USB-C on the back panel, wired to the Main Board soft-latch circuit. The **PC USB-C** (data only, 24-in/8-out USB Audio Class 2 + MIDI composite via XMOS XU216) is on the **top panel** (left zone, Main Board mount). The three mother+daughter pairs tile across the remaining back panel width.
+The PWR USB-C receptacle mounts on the **Power Board** — a small dedicated PCB on the far right of the back panel. Labeled "PWR" (power only, 5V/5A PD). A 2-pin cable carries 5V + GND from the Power Board to the Main Board. An **off-the-shelf screw-collar momentary push button** ("POWER") mounts next to the PWR USB-C on the back panel, wired to the Main Board soft-latch circuit. DAW connectivity is via Ethernet (RJ45 on IO Board, top panel). The three mother+daughter pairs tile across the remaining back panel width.
 
 ------
 

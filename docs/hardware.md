@@ -36,11 +36,7 @@
   - USB host capability for MIDI controllers
   - Extensive GPIO for encoders/buttons/display
   - PJRC Audio Library ecosystem (mixer objects, effects, routing)
-- **XMOS XU216** USB Audio Class 2 bridge
-  - Passive TDM tap: captures all 24 channels (16 inputs + 8 bus outputs) from both SAI buses
-  - Presents as 24-in / 8-out USB audio device + USB MIDI (composite) to PC
-  - MIDI forwarded to/from Teensy via SPI0 (pins 10–13)
-  - See [usb-audio.md](usb-audio.md) for full architecture
+- **DAW connectivity:** Via Ethernet (AES67) — 16-in / 8-out network audio using virtual soundcards on the host PC. See [network-connectivity.md](network-connectivity.md) §9 for DAW integration details.
 
 ------
 
@@ -61,14 +57,10 @@
   - NVM pre-configured to request 5V PDO only (no higher voltages)
   - 2-pin wire (5V + GND) from module output to Main Board TPS22965 input
   - Labeled "PWR" on back panel (right side)
-- **PC — USB-C (data only) — on Main Board (top panel):**
-  - PCB-mount USB-C receptacle on Main Board
-  - D+/D- routed to **XMOS XU216** USB audio bridge (not Teensy native USB)
-  - VBUS not used for system power (only for USB signaling / pull-ups as needed)
-  - Carries USB Audio Class 2 (24-in/8-out, 24-bit 48 kHz) + USB MIDI (composite device via XMOS)
-  - Labeled "PC" on top panel (left zone, near SD card slot)
-  - Ground connected to system GND through ferrite bead to reduce computer-injected noise
-  - See [usb-audio.md](usb-audio.md) for full XMOS architecture
+- **DAW connectivity via Ethernet:**
+  - 16-in / 8-out AES67 network audio via RJ45 MagJack on IO Board
+  - No USB audio bridge — DAW connectivity uses standard AES67 virtual soundcards on host PC
+  - See [network-connectivity.md](network-connectivity.md) §9 for stream layout and recommended software
 
 ### Power Budget (5V rail)
 
@@ -77,9 +69,8 @@
 - **ESP32-S3 display module:** Self-powered from 5V_DIG (~250-350 mA including backlight)
 - **Teensy + logic:** ~200 mA
 - **Isolated analog domain (via 2× MEJ2S0505SC):** ~400 mA total (2× codecs, op-amps, ADP7118 LDOs, TS5A3159, MCP23008, HP amp)
-- **XMOS XU216 (USB audio bridge):** ~200 mA (core 1.0V LDO + I/O 3.3V)
-- **Worst-case total:** ~2.87 A (with uncapped NeoPixels)
-- **With 20% reserve:** ~3.44 A
+- **Worst-case total:** ~2.67 A (with uncapped NeoPixels)
+- **With 20% reserve:** ~3.20 A
 - **Supply target:** 5V @ 5A via USB PD (headroom for uncapped NeoPixels + builder modifications)
 
 ### Power Distribution
@@ -169,14 +160,12 @@ This eliminates USB ground loops, switching noise, and NeoPixel current spikes f
 | Teensy 4.1            | 1        | ARM Cortex-M7, USB host, TDM audio, SD slot    |
 | AK4619VN              | 4        | 4-in/4-out codec; U1-U2 full, U3-U4 ADC only  |
 | PSRAM (8 MB, QSPI)   | 1        | IPS6404LSQ or APS6404L; solder to Teensy bottom pads |
-| XMOS XU216-256-TQ128-C20 | 1    | USB Audio Class 2 bridge; 24-in/8-out multichannel; on Main Board; see [usb-audio.md](usb-audio.md) |
-| W25Q32 QSPI flash (4 MB) | 1    | XMOS firmware storage; on Main Board |
 
 ### UI Components
 
 | Part                          | Quantity | Notes                                        |
 | ----------------------------- | -------- | -------------------------------------------- |
-| ESP32-S3 integrated display module | 1   | 4.3" LCD (e.g., Waveshare ESP32-S3-Touch-LCD-4.3 800×480 or Elecrow CrowPanel 480×272); UART link to Teensy (TX/RX, 2 wires); runs LVGL for all rendering |
+| ESP32-S3 integrated display module | 1   | 4.3" LCD (e.g., Waveshare ESP32-S3-Touch-LCD-4.3 800×480 or Elecrow CrowPanel 480×272); 6-pin header to Teensy (UART TX/RX + ESP32_EN + GPIO0 + 5V + GND); runs LVGL display engine; Teensy-reflashable from SD card via esp-serial-flasher |
 | Rotary encoder with push      | 3        | Quadrature, interrupt-capable pins; NavX + NavY + Edit |
 | Custom key PCB                | 1–2     | CHOC hotswap sockets + WS2812B-2020 + MCP23017 + 100nF caps; 4×4 grid |
 | Kailh CHOC hotswap sockets    | 16       | Soldered to custom PCB                        |
@@ -190,7 +179,6 @@ This eliminates USB ground loops, switching noise, and NeoPixel current spikes f
 | ------------------------------- | -------- | --------------------------------- |
 | TCA9548A I2C mux                | 1        | I2C bus switch on main board; isolates codec boards; address 0x70 |
 | STUSB4500 breakout module       | 1        | Off-the-shelf (SparkFun PD Board or equiv.); PWR USB-C input; back panel |
-| USB-C receptacle (PCB-mount PC) | 1        | PC port — data only; routed to XMOS XU216 (24ch audio+MIDI); on Main Board (top panel) |
 | FE1.1s USB 2.0 hub IC           | 1        | On IO Board; upstream via FFC, 2 downstream to USB-A |
 | 12 MHz crystal                  | 1        | FE1.1s clock source on IO Board, 15 pF load caps |
 | 6N138 optocoupler               | 1        | MIDI IN galvanic isolation on IO Board, 31.25 kbaud |
@@ -226,10 +214,6 @@ This eliminates USB ground loops, switching noise, and NeoPixel current spikes f
 | Si8662BB-B-IS1 (6-ch digital isolator) | 2 | 150 Mbps, 4 fwd + 2 rev; TDM signal isolation; SOIC-16W; 1 per FFC on Main Board |
 | ISO1541DR (isolated I2C)       | 2        | Bidirectional I2C isolator, 1 MHz, SOIC-8; 1 per FFC on Main Board |
 | ADP7118 LDO                    | 3        | 5V_ISO → 3.3V_A ultra-low-noise analog rail; 1 per Input Mother Board (2) + 1 on Main Board (virtual ground buffer) |
-| 1.0V LDO (AP2112K-1.0 or equiv.) | 1      | XMOS XU216 core supply; on Main Board |
-| 24 MHz crystal                 | 1        | XMOS core clock; on Main Board |
-| 24.576 MHz crystal             | 1        | XMOS audio PLL reference; on Main Board |
-| USBLC6-2 ESD protection        | 1        | PC USB-C ESD protection; on Main Board |
 | TPS22965 load switch             | 1       | Soft-start / inrush limiting, 5A continuous |
 | 10 mΩ shunt resistor           | 1        | Current measurement test point           |
 
@@ -282,7 +266,6 @@ This eliminates USB ground loops, switching noise, and NeoPixel current spikes f
 **Top panel (260 × 84.6 mm — all controls and connectivity):**
 
 Left zone (Main Board):
-- PC USB-C (data only — 24ch USB Audio Class 2 + MIDI via XMOS XU216)
 - Full-size SD card slot (left of display, vertically aligned with bottom edge of screen, slot opens upward)
 - 1× ESP32-S3 display module (4.3" integrated LCD; replaces bare TFT + RA8875 controller; physical dimensions depend on chosen module)
 - 3× rotary encoders (NavX + NavY + Edit): horizontal row below display
