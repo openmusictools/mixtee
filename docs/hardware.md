@@ -66,7 +66,7 @@
 
 - **USB host ports:** 2× 500 mA = 1.0 A
 - **NeoPixels (16 keys):** ~320 mA typical (at 30% cap), 960 mA worst-case (uncapped)
-- **ESP32-S3 display PCB:** Self-powered from 5V_DIG (~250-350 mA including backlight)
+- **DESPEE display module:** Self-powered from 5V_DIG (~250-350 mA including backlight)
 - **Teensy + logic:** ~200 mA
 - **Isolated analog domain (via 2× MEJ2S0505SC):** ~400 mA total (2× codecs, op-amps, ADP7118 LDOs, TS5A3159, MCP23008, HP amp)
 - **Worst-case total:** ~2.67 A (with uncapped NeoPixels)

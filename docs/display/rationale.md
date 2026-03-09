@@ -12,7 +12,7 @@ MIXTEE offloads all display rendering to a dedicated ESP32-S3 rather than drivin
 
 ## Recommended Hardware
 
-**Custom display PCB** with:
+**[DESPEE](https://github.com/openaudiotools/despee) display module** — a custom display PCB with:
 
 - **MCU:** ESP32-S3-WROOM-1-N16R8 (16 MB flash, 8 MB PSRAM)
 - **LCD panel:** 4.3" 800×480 capacitive touch, 40-pin RGB interface (e.g., a bare panel from Waveshare, BuyDisplay, or equivalent — no integrated controller board)

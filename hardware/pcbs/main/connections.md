@@ -65,7 +65,7 @@ See [`../io/connections.md`](../io/connections.md) for the full 12-pin FFC pinou
 
 ---
 
-## ESP32-S3 Display Header (6 pin)
+## DESPEE Display Header (6 pin)
 
 | Pin | Signal | Teensy Pin | Notes |
 |-----|--------|------------|-------|

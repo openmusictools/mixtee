@@ -2,7 +2,7 @@ Category,Part,Quantity,Package,Alternate,Unit Cost (USD) Est.,Total Cost (USD) E
 Core Processing,Teensy 4.1,1,Module,,30.00,30.00,ARM Cortex-M7 @ 600 MHz; USB host; 2x TDM/I2S; built-in SD slot (SDIO)
 Core Processing,PSRAM 8 MB (QSPI),1,QSPI BGA,,4.00,4.00,IPS6404LSQ or APS6404L; solder to Teensy 4.1 bottom QSPI pads; multitrack recording buffer
 Core Processing,AK4619VN,4,QFN-32 (5x5mm 0.5mm pitch),,20.00-30.00,80.00-120.00,4-in/4-out audio codec; U1-U2 full (ADC+DAC); U3-U4 ADC only; I2C control; TDM audio
-UI Components,ESP32-S3 integrated display module (4.3 inch),1,Module,,25.00-40.00,25.00-40.00,Waveshare ESP32-S3-Touch-LCD-4.3 (800x480) or Elecrow CrowPanel (480x272); UART link to Teensy; runs LVGL
+UI Components,DESPEE display module (4.3 inch),1,Custom PCB,,15.00-20.00,15.00-20.00,openaudiotools/despee custom PCB (ESP32-S3-WROOM-1-N16R8 + bare 800x480 LCD); 6-pin JST-PH UART link to Teensy; runs LVGL
 UI Components,Rotary encoder with push (Bourns PEC11R-4215F-S0024),3,Through-hole,,5.00,15.00,24 detents; quadrature; push switch; NavX + NavY + Edit
 UI Components,Custom key PCB,1-2,PCB,,5.00-10.00,5.00-10.00,CHOC hotswap sockets + WS2812B-2020 + MCP23017 + 100nF caps; 4x4 grid
 UI Components,Kailh CHOC hotswap sockets,16,SMD,,0.30,4.80,Soldered to custom key PCB

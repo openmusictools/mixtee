@@ -17,7 +17,7 @@
 - **Audio:** PJRC Audio Library (AudioInputTDM, AudioOutputTDM, AudioMixer4)
 - **Encoders:** PJRC Encoder Library (quadrature decoding)
 - **Buttons:** PJRC Bounce Library (debouncing)
-- **Display:** Offloaded to ESP32-S3 custom display PCB (LVGL display engine); Teensy streams binary widget commands over Serial1 UART (pins 0/1) at 921600 baud; see [Display Protocol](display/protocol.md)
+- **Display:** Offloaded to [DESPEE](https://github.com/openaudiotools/despee) display module (ESP32-S3 custom PCB) (LVGL display engine); Teensy streams binary widget commands over Serial1 UART (pins 0/1) at 921600 baud; see [Display Protocol](display/protocol.md)
 - **NeoPixels:** Adafruit NeoPixel or FastLED (level-shifted data output)
 - **Network Audio:** AES67 over Ethernet (16-in / 8-out to DAW); see [network-connectivity.md](network-connectivity.md) §9
 - **MIDI:** USBHost_t36 (Teensy USB Host library)

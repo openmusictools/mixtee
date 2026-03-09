@@ -18,7 +18,7 @@ This mechanism is standardized across all devices in the Open Audio Tools family
 /UPDATE/
   manifest.json     ← versions, checksums, device ID
   teensy.hex        ← Teensy 4.1 firmware (FlasherX format, Intel HEX)
-  display.bin       ← ESP32-S3 display engine firmware (app binary)
+  display.bin       ← DESPEE display engine firmware (ESP32-S3 app binary)
   ui.json           ← UI layout definition
 ```
 
