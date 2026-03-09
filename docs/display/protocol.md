@@ -1,5 +1,7 @@
 # MIXTEE: Display Engine Protocol
 
+> **Note:** The canonical protocol specification lives in [openaudiotools/despee](https://github.com/openaudiotools/despee) (`docs/protocol.md`). This file is MIXTEE's local copy with Teensy-specific context. Protocol changes should be made in DESPEE first and synced here.
+
 *← Back to [README](../../README.md) | See also: [UI Architecture](../ui-architecture.md) · [Firmware](../firmware.md) · [SD Update](../sd-update.md) · [Display Rationale](rationale.md)*
 
 ------
