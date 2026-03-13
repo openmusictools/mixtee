@@ -138,3 +138,5 @@ Prefer MCP tools over raw Python/CLI when possible. See `docs/pcbs-workflow.md` 
 ## Licensing
 
 Triple-licensed: MIT (firmware), CERN-OHL-P v2 (hardware), CC BY 4.0 (docs).
+
+@docs/journal/GUIDE.md
