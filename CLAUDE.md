@@ -31,7 +31,7 @@ MIXTEE is an open-source 16-input / 8-output digital mixer built around the Teen
 | Daughter/Output | `hardware/pcbs/daughter-output/` | Routed, Gerbers exported |
 | Keys4x4 PCB | `hardware/pcbs/keys4x4/` | Routed, Gerbers exported |
 | PHONEE (HP) | `hardware/pcbs/hp/` | Not started (external module: [openaudiotools/phonee](https://github.com/openaudiotools/phonee)) |
-| Power Board | `hardware/pcbs/power/` | Off-the-shelf module |
+| Power Module | `docs/power.md` | Off-the-shelf STUSB4500 breakout (no custom PCB) |
 
 ## Common Commands (Windows)
 
@@ -85,6 +85,9 @@ Prefer MCP tools over raw Python/CLI when possible. See `docs/pcbs-workflow.md` 
 - Read `docs/hardware.md` for BOM tables and target specs
 - Read `docs/pin-mapping.md` for Teensy pin assignments
 
+**Power system work:**
+- Read `docs/power.md` — consolidated power reference (input, budget, distribution, protection, soft-latch)
+
 **System-level hardware review:**
 - Read `docs/system-topology.md` + `docs/hardware.md`
 
@@ -114,7 +117,7 @@ Prefer MCP tools over raw Python/CLI when possible. See `docs/pcbs-workflow.md` 
 | Component changes | `docs/hardware.md` (BOM tables) | `hardware/bom.csv`, board `architecture.md` |
 | Keys4x4 PCB / UI controls | `docs/enclosure.md`, `docs/pin-mapping.md` | `docs/features.md`, board READMEs |
 | Codec wiring / I2C | `hardware/pcbs/input-mother/ak4619-wiring.md` | `docs/pin-mapping.md`, `docs/hardware.md` |
-| Power budget | `docs/hardware.md` | `hardware/bom.csv`, `docs/enclosure.md` |
+| Power system | `docs/power.md` | `hardware/bom.csv`, `docs/hardware.md` (summary), `docs/enclosure.md` |
 | Connector pinouts | Board `connections.md` files | `docs/system-topology.md` (connector summary) |
 | Board definitions | Board `README.md` files | `docs/system-topology.md` (board summary) |
 | Display protocol | `docs/display/protocol.md` | `docs/ui-architecture.md`, `docs/firmware.md` |

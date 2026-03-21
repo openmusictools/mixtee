@@ -46,36 +46,9 @@
 
 ## Power System
 
-### Power Input
+5V @ 5A via USB PD (off-the-shelf STUSB4500 breakout). Worst-case draw ~2.91A, ~50% headroom. See **[Power System](power.md)** for full details (input, budget, distribution, protection, soft-latch circuit).
 
-**Dual USB-C (separate power and data):**
-
-- **PWR — USB-C (power only, USB PD 5V/5A) — off-the-shelf STUSB4500 breakout (back panel):**
-  - Purchased breakout module (SparkFun Power Delivery Board, STEVAL-ISC005V1, or generic)
-  - STUSB4500 USB PD sink controller — negotiates 5V @ 5A from PD-capable supplies
-  - Fallback: 5.1kΩ CC resistors on module for non-PD supplies (defaults to 5V/3A)
-  - NVM pre-configured to request 5V PDO only (no higher voltages)
-  - 2-pin wire (5V + GND) from module output to Main Board TPS22965 input
-  - Labeled "PWR" on back panel (right side)
-- **DAW connectivity via Ethernet:**
-  - 16-in / 8-out AES67 network audio via RJ45 MagJack on IO Board
-  - No USB audio bridge — DAW connectivity uses standard AES67 virtual soundcards on host PC
-  - See [network-connectivity.md](network-connectivity.md) §9 for stream layout and recommended software
-
-### Power Budget (5V rail)
-
-- **USB host ports:** 2× 500 mA = 1.0 A
-- **NeoPixels (16 keys):** ~320 mA typical (at 30% cap), 960 mA worst-case (uncapped)
-- **DESPEE display module:** Self-powered from 5V_DIG (~250-350 mA including backlight)
-- **Teensy + logic:** ~200 mA
-- **Isolated analog domain (via 2× MEJ2S0505SC):** ~400 mA total (2× codecs, op-amps, ADP7118 LDOs, TS5A3159, MCP23008, HP amp)
-- **Worst-case total:** ~2.67 A (with uncapped NeoPixels)
-- **With 20% reserve:** ~3.20 A
-- **Supply target:** 5V @ 5A via USB PD (headroom for uncapped NeoPixels + builder modifications)
-
-### Power Distribution
-
-5V rail is split into 5V_DIG (noisy digital loads: USB, NeoPixels, TFT) and 5V_ISO (galvanically isolated analog domain via MEJ2S0505SC DC-DC converters). TPS22965 load switch provides soft-start. ADP7118 LDOs (2 instances — 1 per Input Mother Board) generate clean 3.3V_A rails. See [Main Board architecture](../hardware/pcbs/main/architecture.md) for detailed power distribution and galvanic isolation design.
+- **DAW connectivity:** Via Ethernet (AES67) — 16-in / 8-out network audio via RJ45 MagJack on IO Board. See [network-connectivity.md](network-connectivity.md) §9 for stream layout and recommended software.
 
 *USB host hub details: see [IO Board architecture](../hardware/pcbs/io/architecture.md).*
 
@@ -86,8 +59,6 @@
 *MIDI IN circuit details: see [IO Board architecture](../hardware/pcbs/io/architecture.md).*
 
 *MIDI OUT circuit details: see [IO Board architecture](../hardware/pcbs/io/architecture.md).*
-
-*Soft-latch power circuit details: see [Main Board architecture](../hardware/pcbs/main/architecture.md).*
 
 *Galvanic isolation details: see [Main Board architecture](../hardware/pcbs/main/architecture.md#galvanic-isolation).*
 
@@ -181,7 +152,7 @@ The canonical BOM is [`hardware/bom.csv`](../hardware/bom.csv). Per-board compon
 
 - **Dimensions:** 260×100×50 mm (W×D×H) — compact desktop format
 - **Weight:** ~1-1.5 kg (depending on enclosure material)
-- **Power Consumption:** 5V @ 2-3A typical, 3.4A worst-case (uncapped NeoPixels); 5A supply via USB PD
+- **Power Consumption:** 5V @ ~2.2A typical, ~2.91A worst-case (uncapped NeoPixels); 5A supply via USB PD
 
 ### Panel Layout (v2.0)
 

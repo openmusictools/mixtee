@@ -20,7 +20,7 @@ For detailed per-board documentation, see each board's directory under `hardware
 |----|------|--------------|-----------|--------|-------------------|--------|---------|
 | M | Main Board | Yes | 1 | 4 | Teensy, 2× Si8662BB + 2× ISO1541 + 2× MEJ2S0505SC (isolation), 74LVC1G00 soft-latch | Digital | [README](../hardware/pcbs/main/README.md) |
 | IO | IO Board | Yes | 1 | 2 | FE1.1s hub, 6N138 MIDI, 2× TPS2051, RJ45 MagJack | Digital | [README](../hardware/pcbs/io/README.md) |
-| P | Power Module | Off-the-shelf | 1 | — | STUSB4500 USB PD breakout (purchased) | Digital | [README](../hardware/pcbs/power/README.md) |
+| P | Power Module | Off-the-shelf | 1 | — | STUSB4500 USB PD breakout (purchased) | Digital | [Power System](power.md) |
 | HP | PHONEE (headphone module) | External | 1 | 2 | TPA6132A2 amp, PCB-mount volume pot, TRS jack | Analog (isolated) | [README](../hardware/pcbs/hp/README.md) |
 | 1-top | Input Mother (TDM1) | Shared w/ 2-top | 1 | 4 | ADP7118 LDO, OPA1678 VG buffer, 2× AK4619VN, 8× input analog, 4× output analog, MCP23008, 4× TS5A3159 | Analog (isolated) | [README](../hardware/pcbs/input-mother/README.md) |
 | 2-top | Input Mother (TDM2) | Shared w/ 1-top | 1 | 4 | ADP7118 LDO, OPA1678 VG buffer, 2× AK4619VN, 8× input analog | Analog (isolated) | [README](../hardware/pcbs/input-mother/README.md) |
@@ -43,7 +43,7 @@ For detailed per-board documentation, see each board's directory under `hardware
 | Mother ↔ Daughter (×3) | JST-PH wire harness | 2.0 mm | 6 | ~15–20 mm | — (both analog) | [daughter-output](../hardware/pcbs/daughter-output/connections.md) |
 | Main ↔ Input Mother (×2) | FFC + ZIF | 1.0 mm | **20** | ~40–50 mm | **Isolation boundary** | [input-mother](../hardware/pcbs/input-mother/connections.md) |
 | Main ↔ IO Board | FFC + ZIF | 1.0 mm | 12 | ~100–120 mm | — (both digital) | [io](../hardware/pcbs/io/connections.md) |
-| Power Board → Main | JST-PH or screw terminal | 2.0 mm | 2 | ~60–80 mm | — | [power](../hardware/pcbs/power/connections.md) |
+| Power Board → Main | JST-PH or screw terminal | 2.0 mm | 2 | ~60–80 mm | — | [power](power.md#cable-to-main-board) |
 | 1-top → O-top | JST-PH or FFC | 2.0 / 1.0 mm | 10 | ~80 mm | — (both analog) | [input-mother](../hardware/pcbs/input-mother/connections.md) |
 | 1-top → PHONEE | JST-PH | 2.0 mm | 4 | ~40–60 mm | — (both analog) | [hp](../hardware/pcbs/hp/connections.md) |
 | Main ↔ Keys4x4 PCB | JST-PH | 2.0 mm | 6 | ~30–40 mm | — (both digital) | [keys4x4](../hardware/pcbs/keys4x4/connections.md) |
