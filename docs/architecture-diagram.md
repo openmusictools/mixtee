@@ -38,14 +38,13 @@ graph TB
             RJ45["RJ45 MagJack\nEthernet"]
         end
 
-        subgraph KEY["Key PCB - 2-layer"]
+        subgraph KEY["Keys4x4 PCB - 2-layer"]
             KEY_CONTENTS["MCP23017 0x20\n16x WS2812B NeoPixels\n16x CHOC Switches"]
         end
 
         subgraph PERIPHERALS["Peripherals"]
             direction TB
-            ESP32["ESP32-S3\nCustom Display PCB\nWROOM-1-N16R8\n4.3in 800x480 LCD"]
-            ENCODERS["3x Rotary Encoders\nNavX - NavY - Edit"]
+            ESP32["ESP32-S3\nCustom Display PCB\nWROOM-1-N16R8\n4.3in 800x480 LCD\n3x Encoders (NavX/NavY/Edit)"]
             PWR_BTN["Power Button\nmomentary"]
         end
     end
@@ -105,7 +104,7 @@ graph TB
     ISO1541 -- "Isolated I2C\nvia FFC #2" --> U3
     ISO1541 -- "I2C" --> U4
 
-    %% Key PCB (single 6-pin cable)
+    %% Keys4x4 PCB (single 6-pin cable)
     TEENSY -- "6-pin JST-PH\nI2C + NeoPixel + INT + 5V" --> KEY_CONTENTS
 
     %% IO Board cables
@@ -113,8 +112,7 @@ graph TB
     TEENSY -- "6-pin ribbon\nETH TX/RX diff pairs" --> RJ45
 
     %% Peripherals
-    TEENSY -- "Serial1 UART\npins 0/1" --> ESP32
-    TEENSY -- "GPIO\ninterrupt-capable" --> ENCODERS
+    TEENSY -- "Serial1 UART\npins 0/1\nwidgets + encoder events" --> ESP32
     PWR_BTN -- "sense\npins 40/41" --> TEENSY
 
     %% Analog input path
@@ -144,7 +142,7 @@ graph TB
     class TEENSY,TCA,MAIN_IO digital
     class USB_HOST,RJ45,MIDI digital
     class KEY_CONTENTS digital
-    class ESP32,ENCODERS,PWR_BTN digital
+    class ESP32,PWR_BTN digital
 
     class U1,U2,U3,U4,OPAMP_1,OPAMP_2,ADP_1,ADP_2 analog
     class MCP23008,TS5A analog

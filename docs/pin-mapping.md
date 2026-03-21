@@ -49,7 +49,7 @@ BCLK = 48 kHz × 16 slots × 32 bits = **24.576 MHz**. MCLK = 256×fs = **12.288
 | **18** | SDA | SDA | Wire (I2C0) |
 | **19** | SCL | SCL | Wire (I2C0) |
 
-All four AK4619VN codecs share one I2C bus via a **TCA9548A I2C mux** (address 0x70) on the main board. The mux isolates each Input Mother Board onto its own channel (Ch 0 for U1/U2, Ch 1 for U3/U4), resolving the AK4619VN 2-address limitation. A **MCP23017 I2C GPIO expander** (address 0x20) on the Key PCB handles the 4×4 key scan matrix over the same bus. SDA and SCL routed on both FFC cables and the Key PCB cable. External pull-ups: 4.7kΩ to 3.3V on the main board (upstream of mux). Each Input Mother Board has its own downstream pull-ups. See [AK4619VN Wiring](../hardware/pcbs/input-mother/ak4619-wiring.md) for addressing details.
+All four AK4619VN codecs share one I2C bus via a **TCA9548A I2C mux** (address 0x70) on the main board. The mux isolates each Input Mother Board onto its own channel (Ch 0 for U1/U2, Ch 1 for U3/U4), resolving the AK4619VN 2-address limitation. A **MCP23017 I2C GPIO expander** (address 0x20) on the Keys4x4 PCB handles the 4×4 key scan matrix over the same bus. SDA and SCL routed on both FFC cables and the Keys4x4 PCB cable. External pull-ups: 4.7kΩ to 3.3V on the main board (upstream of mux). Each Input Mother Board has its own downstream pull-ups. See [AK4619VN Wiring](../hardware/pcbs/input-mother/ak4619-wiring.md) for addressing details.
 
 ### Serial3 — MIDI IN (6N138 Output)
 
@@ -142,34 +142,31 @@ Pins 49, 50, 52, 53, 54 (plus CS on 48 or 51) are consumed by the 8 MB PSRAM sol
 
 Total Teensy 4.1 edge pins: **42** (pins 0–41)
 Consumed by peripherals: **18** (SAI1 ×6, SAI2 ×6, I2C ×2, Serial1/ESP32 ×2, Serial3 RX ×1, Serial4 TX ×1)
-Available for GPIO: **24** (13 assigned + 2 ESP32 boot control + 9 spare)
+Available for GPIO: **24** (6 assigned + 2 ESP32 boot control + 16 spare — was 9 spare before encoder move)
 
 ### GPIO Requirements
 
 | Function | Pins needed | Notes |
 |----------|------------|-------|
-| Encoder 1 (NavX) | **3** | A, B, push switch — horizontal navigation |
-| Encoder 2 (NavY) | **3** | A, B, push switch — vertical navigation |
-| Encoder 3 (Edit) | **3** | A, B, push switch — value editing |
 | NeoPixel data | **1** | Single data line to 16× WS2812B |
 | Power button sense | **1** | Soft-latch button state (back panel button, wired to Main Board) |
 | KEEP_ALIVE | **1** | Hold soft-latch set during operation |
 | MCP23017 INT (optional) | **1** | Interrupt-driven key scan; can be omitted if polling |
 | MIDI OUT | **1** | Serial4 TX (pin 17) |
 | ESP32 boot control | **2** | ESP32_EN (pin 9) + ESP32_GPIO0 (pin 10) for SD card update reflash |
-| **Total** | **15** | |
+| **Total** | **6** | (was 15 — encoders moved to DESPEE display module) |
 
-**Remaining spare: 9 pins** (11, 12, 13, 14, 30, 35, 37, 38, 39). Pins 11–13 freed by XMOS removal (SPI0 no longer used). Pins 9–10 now assigned to ESP32-S3 bootloader control (EN + GPIO0) for SD card update reflash. Pins 30/35/37/38 freed by moving TS5A3159 mute control to MCP23008 on Board 1-top (isolated analog domain). Pin 39 freed by routing headphone detect via MCP23008 GP6 on Board 1-top instead of direct GPIO.
+**Remaining spare: 18 pins** (11, 12, 13, 14, 16, 24, 25, 26, 27, 28, 29, 30, 31, 35, 36, 37, 38, 39). Encoders are now integrated into the DESPEE display module — the ESP32-S3 reads them via GPIO and drives LVGL focus groups natively, freeing 9 Teensy pins (was: 24, 25, 28, 29, 31, 36 for encoder A/B; 16, 26, 27 for encoder push/A/B). Pins 11–13 freed by XMOS removal (SPI0 no longer used). Pins 9–10 assigned to ESP32-S3 bootloader control. Pins 30/35/37/38 freed by moving TS5A3159 mute control to MCP23008 on Board 1-top. Pin 39 freed by routing headphone detect via MCP23008 GP6 on Board 1-top.
 
 ### Key Matrix via MCP23017
 
-The 4×4 key matrix (16 keys) is handled entirely by a **MCP23017 I2C GPIO expander** (address 0x20) on the Key PCB. This frees 7 Teensy GPIO pins compared to a direct-wired matrix:
+The 4×4 key matrix (16 keys) is handled entirely by a **MCP23017 I2C GPIO expander** (address 0x20) on the Keys4x4 PCB. This frees 7 Teensy GPIO pins compared to a direct-wired matrix:
 
 - MCP23017 Port A (GPA0–3): 4 column inputs with internal pull-ups
 - MCP23017 Port B (GPB0–3): 4 row outputs (active-low scan)
 - 16× 1N4148 diodes per switch (cathode toward row) prevent ghosting
 - Scan rate: polled via I2C at ~1 kHz, or interrupt-driven via INTA/INTB pin
-- Only I2C (SDA/SCL) + optional INT needed in the Key↔Main cable (6 pins total)
+- Only I2C (SDA/SCL) + optional INT needed in the Keys4x4↔Main cable (6 pins total)
 
 ------
 
@@ -186,26 +183,26 @@ The 4×4 key matrix (16 keys) is handled entirely by a **MCP23017 I2C GPIO expan
 | **12** | *(spare — was SPI0 MISO for XMOS)* | — | SPI0 MISO alternate available |
 | **13** | *(spare — was SPI0 SCK for XMOS)* | — | SPI0 SCK; also built-in LED alternate |
 | **14** | *(spare — was RA8875 RESET)* | — | Freed by ESP32-S3 display offload; IOMUX reclaimed from Serial3 TX after `Serial3.begin()` |
-| **16** | Encoder 3 (Edit) — Push | Input (pull-up) | Also SCL1/RX4 alternate |
+| **16** | *(spare — was Encoder 3 Edit push, moved to DESPEE)* | — | Also SCL1/RX4 alternate |
 | **17** | MIDI OUT (Serial4 TX) | Output | 31.25 kbaud MIDI output; also SDA1/TX4 alternate |
-| **22** | MCP23017 INT (optional) | Input (pull-up) | Key scan interrupt from Key PCB; also A8 |
-| **24** | Encoder 1 (NavX) — A | Input (pull-up) | Interrupt-capable; horizontal navigation; also SCL2/A10 |
-| **25** | Encoder 1 (NavX) — B | Input (pull-up) | Interrupt-capable; also SDA2/A11 |
-| **26** | Encoder 3 (Edit) — A | Input (pull-up) | Interrupt-capable; also A12 |
-| **27** | Encoder 3 (Edit) — B | Input (pull-up) | Interrupt-capable; also A13/SCK1 |
-| **28** | Encoder 1 (NavX) — Push | Input (pull-up) | Also RX7 |
-| **29** | Encoder 2 (NavY) — A | Input (pull-up) | Interrupt-capable; vertical navigation; also CRX3 |
+| **22** | MCP23017 INT (optional) | Input (pull-up) | Key scan interrupt from Keys4x4 PCB; also A8 |
+| **24** | *(spare — was Encoder 1 NavX A, moved to DESPEE)* | — | Interrupt-capable; also SCL2/A10 |
+| **25** | *(spare — was Encoder 1 NavX B, moved to DESPEE)* | — | Interrupt-capable; also SDA2/A11 |
+| **26** | *(spare — was Encoder 3 Edit A, moved to DESPEE)* | — | Interrupt-capable; also A12 |
+| **27** | *(spare — was Encoder 3 Edit B, moved to DESPEE)* | — | Interrupt-capable; also A13/SCK1 |
+| **28** | *(spare — was Encoder 1 NavX push, moved to DESPEE)* | — | Also RX7 |
+| **29** | *(spare — was Encoder 2 NavY A, moved to DESPEE)* | — | Interrupt-capable; also CRX3 |
 | **30** | *(spare — was TS5A3159 mute Main L/R, moved to MCP23008 on Board 1-top)* | — | Freed by galvanic isolation; mute now via I2C |
-| **31** | Encoder 2 (NavY) — B | Input (pull-up) | Relocated from pin 32 (now SAI1_RX_DATA1); interrupt-capable |
+| **31** | *(spare — was Encoder 2 NavY B, moved to DESPEE)* | — | Relocated from pin 32 (now SAI1_RX_DATA1); interrupt-capable |
 | **35** | *(spare — was TS5A3159 mute AUX1, moved to MCP23008 on Board 1-top)* | — | **Bottom pad**; freed by galvanic isolation |
-| **36** | Encoder 2 (NavY) — Push | Input (pull-up) | |
+| **36** | *(spare — was Encoder 2 NavY push, moved to DESPEE)* | — | |
 | **37** | *(spare — was TS5A3159 mute AUX2, moved to MCP23008 on Board 1-top)* | — | Freed by galvanic isolation |
 | **38** | *(spare — was TS5A3159 mute AUX3, moved to MCP23008 on Board 1-top)* | — | Also A14; freed by galvanic isolation |
 | **39** | *(spare — was headphone detect, now via MCP23008 GP6 on Board 1-top)* | — | Also A15; freed by galvanic isolation |
 | **40** | Power button sense | Input (pull-up) | Back panel button wired to Main Board soft-latch; also A16 |
 | **41** | KEEP_ALIVE | Output | Holds soft-latch set; release to shut down; also A17 |
 
-*Key matrix wiring and key-switch mapping moved to [Key PCB architecture](../hardware/pcbs/key/architecture.md).*
+*Key matrix wiring and key-switch mapping moved to [Keys4x4 PCB architecture](../hardware/pcbs/keys4x4/architecture.md).*
 
 ------
 
@@ -215,12 +212,9 @@ Using certain pins as GPIO makes their alternate peripheral functions unavailabl
 
 | Pins | Lost alternate | Impact |
 |------|---------------|--------|
-| 24, 25 | Wire2 (I2C2), Serial6 | Not needed |
-| 28 | Serial7 RX | Not needed — MIDI uses Serial3 |
-| 29 | CAN3 RX | Not needed |
 | 0, 1 | SPI1 CS/MISO, CAN2 | Used as Serial1 for ESP32-S3 UART; SPI1/CAN2 not needed |
 
-**Note:** Pin 16 (Wire1 SCL / Serial4 RX) remains spare. Pin 17 is used as Serial4 TX for MIDI OUT — its Wire1 SDA alternate is unavailable.
+**Note:** Pins 16, 24, 25, 26, 27, 28, 29, 31, 36 are now spare (encoders moved to DESPEE). Their alternate functions (Wire1, Wire2, Serial6, Serial7, CAN3) are available if needed. Pin 17 is used as Serial4 TX for MIDI OUT — its Wire1 SDA alternate is unavailable.
 
 ------
 
@@ -239,7 +233,7 @@ Using certain pins as GPIO makes their alternate peripheral functions unavailabl
 
 ------
 
-*FFC cable pinouts moved to per-board connections.md files. See [input-mother](../hardware/pcbs/input-mother/connections.md), [io](../hardware/pcbs/io/connections.md), [key](../hardware/pcbs/key/connections.md), [main](../hardware/pcbs/main/connections.md).*
+*FFC cable pinouts moved to per-board connections.md files. See [input-mother](../hardware/pcbs/input-mother/connections.md), [io](../hardware/pcbs/io/connections.md), [keys4x4](../hardware/pcbs/keys4x4/connections.md), [main](../hardware/pcbs/main/connections.md).*
 
 ------
 
@@ -255,7 +249,7 @@ Using certain pins as GPIO makes their alternate peripheral functions unavailabl
 - [ ] Confirm pins 6, 9 are not claimed by Audio Library in TDM mode (DATA2/DATA3 alternates unused)
 - [ ] Test Serial3 RX-only operation with pin 14 reclaimed as GPIO
 - [ ] Verify MCP23017 I2C key matrix scan works at 0x20 (no bus conflicts with TCA9548A at 0x70)
-- [ ] Check encoder interrupt latency on pins 24/25/26/27/29/31 (all interrupt-capable ✓)
+- [ ] Verify DESPEE encoder events arrive via UART with acceptable latency (<5 ms)
 - [ ] Validate FE1.1s upstream D+/D- connects to Teensy USB Host bottom pads (not USB Device)
 - [ ] Print 1:1 Teensy 4.1 footprint, verify bottom pad access for pins 33, 34, 35, 42–47
 - [ ] Verify external SD card socket SDIO routing from Teensy bottom pads 42–47

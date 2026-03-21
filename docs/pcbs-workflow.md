@@ -267,7 +267,7 @@ kicad-cli pcb export pdf \
   -o ./module_placed.pdf module_placed.kicad_pcb
 ```
 
-Place the PDF in the board's directory alongside the Gerbers (e.g. `hardware/pcbs/key/mixtee-key-pcb.pdf`). Commit it to the repo so reviewers can open it directly on GitHub.
+Place the PDF in the board's directory alongside the Gerbers (e.g. `hardware/pcbs/keys4x4/mixtee-keys4x4-pcb.pdf`). Commit it to the repo so reviewers can open it directly on GitHub.
 
 ***
 

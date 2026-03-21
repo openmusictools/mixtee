@@ -18,7 +18,7 @@
 - `hardware/pcbs/input-mother/architecture.md` — analog stage design (codec board detail)
 - `hardware/pcbs/input-mother/ak4619-wiring.md` — codec register config
 - `hardware/pcbs/io/architecture.md` — IO Board circuits
-- `hardware/pcbs/key/architecture.md` — key matrix wiring
+- `hardware/pcbs/keys4x4/architecture.md` — key matrix wiring
 - `docs/ui-architecture.md` — display/UI hierarchy (firmware concern)
 
 ## Design Files

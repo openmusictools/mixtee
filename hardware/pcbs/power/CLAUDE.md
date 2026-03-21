@@ -11,7 +11,7 @@
 ## Do NOT Read (irrelevant to this board)
 - `hardware/pcbs/input-mother/` — codec board design
 - `hardware/pcbs/io/` — IO Board design
-- `hardware/pcbs/key/` — key PCB design
+- `hardware/pcbs/keys4x4/` — keys4x4 PCB design
 - `docs/pin-mapping.md` — Teensy pin assignments
 - `docs/ui-architecture.md` — display/UI hierarchy
 

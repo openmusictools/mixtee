@@ -1,4 +1,4 @@
-# Key PCB — Architecture
+# Keys4x4 PCB — Architecture
 
 ## MCP23017 Key Matrix
 
@@ -24,7 +24,7 @@ GPB3 (ROW 3)─┼──[SW13]─|>──┼──[SW14]─|>──┼──[SW1
               │              │              │              │
 ```
 
-`|>` = 1N4148 diode (cathode toward row pin). All matrix wiring local to Key PCB.
+`|>` = 1N4148 diode (cathode toward row pin). All matrix wiring local to Keys4x4 PCB.
 
 ## Key-Switch Mapping
 
@@ -53,7 +53,7 @@ GPB3 (ROW 3)─┼──[SW13]─|>──┼──[SW14]─|>──┼──[SW1
 - Single data line from Teensy pin 6 (via JST)
 - 300–500Ω series resistor on Main Board (near first pixel data entry)
 - 100nF decoupling cap per pixel
-- Bulk capacitor (1000–2200 uF) near 5V entry on Key PCB recommended
+- Bulk capacitor (1000–2200 uF) near 5V entry on Keys4x4 PCB recommended
 - Default firmware brightness cap: 30% (reduces noise and power draw)
 
 ---

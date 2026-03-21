@@ -53,7 +53,7 @@
   - **Ch 0** → FFC to Board 1-top (U1 @ 0x10, U2 @ 0x11)
   - **Ch 1** → FFC to Board 2-top (U3 @ 0x10, U4 @ 0x11)
 - Resolves AK4619VN 2-address limitation
-- MCP23017 (0x20, Key PCB) sits upstream — always accessible
+- MCP23017 (0x20, Keys4x4 PCB) sits upstream — always accessible
 - External pull-ups: 4.7k ohm to 3.3V upstream of mux
 
 ---
@@ -160,11 +160,11 @@ See [Input Mother Board architecture](../input-mother/architecture.md) for TS5A3
 | 9 | ESP32_EN (display reset) |
 | 10 | ESP32_GPIO0 (display boot mode) |
 | 14 | *(spare — was RA8875 RESET)* |
-| 16 | Encoder 3 (Edit) push |
+| 16 | *(spare — was Encoder 3 Edit push, moved to DESPEE)* |
 | 22 | MCP23017 INT |
-| 24, 25, 28 | Encoder 1 (NavX) A, B, push |
-| 26, 27 | Encoder 3 (Edit) A, B |
-| 29, 31, 36 | Encoder 2 (NavY) A, B, push |
+| 24, 25, 28 | *(spare — was Encoder 1 NavX A/B/push, moved to DESPEE)* |
+| 26, 27 | *(spare — was Encoder 3 Edit A/B, moved to DESPEE)* |
+| 29, 31, 36 | *(spare — was Encoder 2 NavY A/B/push, moved to DESPEE)* |
 | 30 | *(spare — was TS5A3159 mute, moved to isolated domain)* |
 | 35 | *(spare — was TS5A3159 mute AUX1, bottom pad)* |
 | 37 | *(spare — was TS5A3159 mute AUX2)* |
@@ -173,7 +173,7 @@ See [Input Mother Board architecture](../input-mother/architecture.md) for TS5A3
 | 40 | Power button sense |
 | 41 | KEEP_ALIVE |
 
-**Total edge pins:** 42. **Consumed by peripherals:** 18 (SAI ×12, I2C ×2, Serial1/ESP32 ×2, Serial3 RX ×1, Serial4 TX ×1). **GPIO:** 15 used (13 original + 2 ESP32 boot control), 9 spare (pins 11, 12, 13, 14, 30, 35, 37, 38, 39).
+**Total edge pins:** 42. **Consumed by peripherals:** 18 (SAI ×12, I2C ×2, Serial1/ESP32 ×2, Serial3 RX ×1, Serial4 TX ×1). **GPIO:** 6 used (4 original + 2 ESP32 boot control), 18 spare (pins 11, 12, 13, 14, 16, 24, 25, 26, 27, 28, 29, 30, 31, 35, 36, 37, 38, 39). Encoders moved to DESPEE display module — ESP32-S3 reads them locally via GPIO.
 
 ---
 

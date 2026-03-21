@@ -38,13 +38,15 @@ Dimensions: **260 mm** wide × **84.6 mm** deep (front to back). Outputs moved t
 **Display** (upper left, right of SD slot):
 - TFT 93 × 56 mm visible area
 
-**Encoder section** (below display, horizontal row):
+**Encoder section** (below display, horizontal row — mounted on DESPEE PCB):
 - NavX encoder (left) — horizontal navigation
 - NavY encoder (center) — vertical navigation
 - Edit encoder (right) — value editing
 - Arranged in a horizontal row beneath the display
+- Encoders are soldered directly to the DESPEE display PCB; shafts protrude through top panel
+- No wiring from encoders to Main Board — ESP32-S3 reads encoders locally via GPIO
 
-### Center — Keys (Key PCB)
+### Center — Keys (Keys4x4 PCB)
 
 **4×4 CHOC key grid**:
 - Row 1 (channel controls): Mute, Solo, Rec, (assignable)
@@ -76,4 +78,4 @@ Per switch position:
 - WS2812B-2020 NeoPixel (daisy-chained DOUT→DIN, single data pin)
 - 100nF ceramic decoupling cap
 
-All 16 LEDs share one data line. Switches are scanned via a MCP23017 I2C GPIO expander (address 0x20) on the Key PCB, using a 4×4 matrix with 1N4148 anti-ghosting diodes.
+All 16 LEDs share one data line. Switches are scanned via a MCP23017 I2C GPIO expander (address 0x20) on the Keys4x4 PCB, using a 4×4 matrix with 1N4148 anti-ghosting diodes.

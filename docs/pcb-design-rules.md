@@ -60,7 +60,7 @@ Primary: **JLCPCB** or **PCBWay** standard capabilities. All design rules chosen
 | L3 | Power plane (5V / 3.3V) | 0.5 oz |
 | L4 (Bottom) | Signal + components | 1 oz |
 
-**2-layer stackup (IO Board, Daughter/Output, Key PCB):**
+**2-layer stackup (IO Board, Daughter/Output, Keys4x4 PCB):**
 
 | Layer | Function | Copper |
 |-------|----------|--------|
@@ -84,7 +84,7 @@ Primary: **JLCPCB** or **PCBWay** standard capabilities. All design rules chosen
 
 ## Grounding Strategy
 
-### Digital Domain (Main Board, IO Board, Key PCB)
+### Digital Domain (Main Board, IO Board, Keys4x4 PCB)
 
 - **Single continuous GND plane** on L2 (4-layer) or L2 (2-layer)
 - **Star topology** for high-current returns: USB host VBUS, NeoPixels, TFT backlight returns converge near power entry point

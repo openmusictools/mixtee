@@ -6,7 +6,7 @@
 
 ## Overview
 
-MIXTEE uses a modular multi-board design with **galvanic isolation** between the digital and analog domains. The main board sits horizontally under the top panel and contains the isolation boundary (Si8662BB, ISO1541, MEJ2S0505SC). Six back-panel boards (three mother+daughter pairs) carry all audio I/O in the isolated analog domain. A dedicated IO board on the left side of the top panel handles Ethernet, USB MIDI host, and MIDI IN/OUT. A standalone HP Board carries the headphone amp in the isolated analog domain (powered from Board 1-top). A key PCB handles the illuminated switch grid. An off-the-shelf STUSB4500 breakout module on the back panel provides USB PD power input.
+MIXTEE uses a modular multi-board design with **galvanic isolation** between the digital and analog domains. The main board sits horizontally under the top panel and contains the isolation boundary (Si8662BB, ISO1541, MEJ2S0505SC). Six back-panel boards (three mother+daughter pairs) carry all audio I/O in the isolated analog domain. A dedicated IO board on the left side of the top panel handles Ethernet, USB MIDI host, and MIDI IN/OUT. A standalone HP Board carries the headphone amp in the isolated analog domain (powered from Board 1-top). A Keys4x4 PCB handles the illuminated switch grid. An off-the-shelf STUSB4500 breakout module on the back panel provides USB PD power input.
 
 Total: **7 unique PCB designs**, 11 physical boards + 1 off-the-shelf power module.
 
@@ -28,7 +28,7 @@ For detailed per-board documentation, see each board's directory under `hardware
 | 2-bot | Input Daughter (TDM2) | Shared | 1 | 2 | ESD diodes only | Analog (isolated) | [README](../hardware/pcbs/daughter-output/README.md) |
 | O-top | Output Top | Shared (or near-identical) | 1 | 2 | ESD diodes only | Analog (isolated) | [README](../hardware/pcbs/daughter-output/README.md) |
 | O-bot | Output Bottom | Shared | 1 | 2 | ESD diodes only | Analog (isolated) | [README](../hardware/pcbs/daughter-output/README.md) |
-| K | Key PCB | Yes | 1 | 2 | 16× NeoPixel, 16× CHOC socket, MCP23017 | Digital | [README](../hardware/pcbs/key/README.md) |
+| K | Keys4x4 PCB | Yes | 1 | 2 | 16× NeoPixel, 16× CHOC socket, MCP23017 | Digital | [README](../hardware/pcbs/keys4x4/README.md) |
 
 **Unique PCB designs:** 7 (Main, IO, HP, Input Mother, Daughter/Output, Key, plus possibly a separate Output Top if connector differs) + 1 off-the-shelf power module
 
@@ -46,7 +46,7 @@ For detailed per-board documentation, see each board's directory under `hardware
 | Power Board → Main | JST-PH or screw terminal | 2.0 mm | 2 | ~60–80 mm | — | [power](../hardware/pcbs/power/connections.md) |
 | 1-top → O-top | JST-PH or FFC | 2.0 / 1.0 mm | 10 | ~80 mm | — (both analog) | [input-mother](../hardware/pcbs/input-mother/connections.md) |
 | 1-top → HP Board | JST-PH | 2.0 mm | 4 | ~40–60 mm | — (both analog) | [hp](../hardware/pcbs/hp/connections.md) |
-| Main ↔ Key PCB | JST-PH | 2.0 mm | 6 | ~30–40 mm | — (both digital) | [key](../hardware/pcbs/key/connections.md) |
+| Main ↔ Keys4x4 PCB | JST-PH | 2.0 mm | 6 | ~30–40 mm | — (both digital) | [keys4x4](../hardware/pcbs/keys4x4/connections.md) |
 | Main ↔ Display | JST-PH | 2.0 mm | **6** | ~20 mm | — | [main](../hardware/pcbs/main/connections.md) |
 
 ------
@@ -75,8 +75,8 @@ The PWR USB-C receptacle mounts on the **Power Board** — a small dedicated PCB
 ## Design Reuse Opportunities
 
 1. **Input mother boards (1-top, 2-top):** Same PCB. Codec I2C addresses set by solder jumpers. Output analog section + MCP23008 + TS5A3159 on Board 1-top populated; on Board 2-top left empty.
-2. **All daughter/output boards (1-bot, 2-bot, O-top, O-bot):** Potentially same PCB if connector placement and jack spacing match. All are 4× TS jacks + ESD + one connector. Worth investigating during schematic phase — could reduce unique designs from 7 to 5 (Main, IO, HP, Input Mother, Universal Daughter, Key).
-3. **Key PCB**, **IO Board**, and **HP Board** are standalone custom designs with no reuse opportunities. The **Power Module** is an off-the-shelf STUSB4500 breakout (no custom PCB). The **headphone amp** uses an off-the-shelf TPA6132 or MAX97220 breakout module mounted on the HP Board.
+2. **All daughter/output boards (1-bot, 2-bot, O-top, O-bot):** Potentially same PCB if connector placement and jack spacing match. All are 4× TS jacks + ESD + one connector. Worth investigating during schematic phase — could reduce unique designs from 7 to 5 (Main, IO, HP, Input Mother, Universal Daughter, Keys4x4).
+3. **Keys4x4 PCB**, **IO Board**, and **HP Board** are standalone custom designs with no reuse opportunities. The **Power Module** is an off-the-shelf STUSB4500 breakout (no custom PCB). The **headphone amp** uses an off-the-shelf TPA6132 or MAX97220 breakout module mounted on the HP Board.
 
 ------
 
@@ -87,4 +87,4 @@ The PWR USB-C receptacle mounts on the **Power Board** — a small dedicated PCB
 - **HP Board:** Panel-mount via headphone jack nut (top panel, left zone). Receives audio + power from Board 1-top via 4-pin JST-PH cable. Optional standoff.
 - **I/O Boards (Mother, Daughter, Output):** Mechanically held by panel-mount jack nuts — the 1/4" TS jacks thread through back panel holes and their nuts clamp the boards to the panel. No additional standoffs needed.
 - **Power Module:** Off-the-shelf STUSB4500 breakout, secured to back panel by USB-C jack nut or adhesive standoff.
-- **Key PCB:** Mounted to top panel via standoffs or snap-fit clips. CHOC switches protrude through top panel cutouts, keycaps sit flush with panel surface.
+- **Keys4x4 PCB:** Mounted to top panel via standoffs or snap-fit clips. CHOC switches protrude through top panel cutouts, keycaps sit flush with panel surface.

@@ -3,12 +3,12 @@ Core Processing,Teensy 4.1,1,Module,,30.00,30.00,ARM Cortex-M7 @ 600 MHz; USB ho
 Core Processing,PSRAM 8 MB (QSPI),1,QSPI BGA,,4.00,4.00,IPS6404LSQ or APS6404L; solder to Teensy 4.1 bottom QSPI pads; multitrack recording buffer
 Core Processing,AK4619VN,4,QFN-32 (5x5mm 0.5mm pitch),,20.00-30.00,80.00-120.00,4-in/4-out audio codec; U1-U2 full (ADC+DAC); U3-U4 ADC only; I2C control; TDM audio
 UI Components,DESPEE display module (4.3 inch),1,Custom PCB,,15.00-20.00,15.00-20.00,openaudiotools/despee custom PCB (ESP32-S3-WROOM-1-N16R8 + bare 800x480 LCD); 6-pin JST-PH UART link to Teensy; runs LVGL
-UI Components,Rotary encoder with push (Bourns PEC11R-4215F-S0024),3,Through-hole,,5.00,15.00,24 detents; quadrature; push switch; NavX + NavY + Edit
+UI Components,Rotary encoder with push (Bourns PEC11R-4215F-S0024),0,Through-hole,,0.00,0.00,MOVED TO DESPEE BOM — encoders now mount on DESPEE display PCB; ESP32-S3 reads locally
 UI Components,Custom key PCB,1-2,PCB,,5.00-10.00,5.00-10.00,CHOC hotswap sockets + WS2812B-2020 + MCP23017 + 100nF caps; 4x4 grid
 UI Components,Kailh CHOC hotswap sockets,16,SMD,,0.30,4.80,Soldered to custom key PCB
 UI Components,WS2812B-2020 NeoPixels,16,SMD,,0.25,4.00,Daisy-chained DOUT-DIN; single data pin; per-key RGB LED
 UI Components,100nF ceramic cap (key LEDs),16,0402/0603,,0.02,0.32,Decoupling per WS2812B
-UI Components,MCP23017 I2C GPIO expander,1,SOIC-28 / DIP-28,,1.50,1.50,4x4 key scan matrix; on Key PCB; address 0x20
+UI Components,MCP23017 I2C GPIO expander,1,SOIC-28 / DIP-28,,1.50,1.50,4x4 key scan matrix; on Keys4x4 PCB; address 0x20
 UI Components,CHOC v2 key switches,16,Through-hole,,1.00,16.00,User-supplied or included; hotswap into custom PCB
 Power & Connectivity,TCA9548A I2C mux,1,TSSOP-24,,1.50,1.50,I2C bus switch; isolates codec boards; address 0x70
 Power & Connectivity,STUSB4500 breakout module (off-the-shelf),1,Module,,10.00-15.00,10.00-15.00,SparkFun PD Board or equivalent; USB-C PWR input; back panel; NVM configured for 5V only
@@ -53,7 +53,7 @@ Passives & Protection,Ceramic capacitor 0.1 uF,60,0402/0603/0805,,0.02,1.20,Loca
 Passives & Protection,Ferrite bead,5,0805,,0.15,0.75,Post-isolation filter on each Mother Board (x2) + USB GND + misc
 Passives & Protection,Resistor 300-500 ohm,1,0805,,0.02,0.02,NeoPixel data line series resistor (reduces ringing)
 Passives & Protection,Polyfuse 2.5A/5A,1,Through-hole/SMD,,0.50,0.50,Main Board 5V rail input; overcurrent protection (power module may include its own)
-Passives & Protection,1N4148 signal diode (key matrix),16,SOD-323,,0.05,0.80,Anti-ghosting diodes for 4x4 key matrix on Key PCB
+Passives & Protection,1N4148 signal diode (key matrix),16,SOD-323,,0.05,0.80,Anti-ghosting diodes for 4x4 key matrix on Keys4x4 PCB
 Passives & Protection,Schottky clamp diodes,25,SOD-323/SOT-23,,0.10,2.50,ESD protection on all audio jacks (24 TS + 1 TRS headphone)
 Passives & Protection,Film capacitors 3.3nF,24,0603/0805,,0.05,1.20,Anti-alias + reconstruction Sallen-Key filters
 Passives & Protection,Film capacitors 6.8nF,24,0603/0805,,0.05,1.20,Anti-alias + reconstruction Sallen-Key filters
@@ -65,6 +65,6 @@ Passives & Protection,Ceramic capacitor 10 uF (post-isolation filter),2,0805,,0.
 Passives & Protection,Ceramic capacitor 15 pF,2,0402/0603,,0.02,0.04,IO Board; FE1.1s crystal load capacitors
 Passives & Protection,Ceramic capacitor 0.1 uF (Ethernet coupling),1,0603,,0.02,0.02,IO Board; AC coupling between Teensy PHY and RJ45 MagJack
 Passives & Protection,Soft-latch passives (R + C misc),1,0603/0805,,0.50,0.50,Debounce cap; RC timeout network; pull-up/pull-down resistors for latch
-Fabrication,PCB fabrication (prototype),1,,,35.00-70.00,35.00-70.00,Main (4L) + IO (2L) + HP (2L) + input mother (4L) + daughter/output (2L) + key (2L); prototype qty; power module is off-the-shelf
+Fabrication,PCB fabrication (prototype),1,,,35.00-70.00,35.00-70.00,Main (4L) + IO (2L) + HP (2L) + input mother (4L) + daughter/output (2L) + keys4x4 (2L); prototype qty; power module is off-the-shelf
 Fabrication,Enclosure (DIY/3D print or kit),1,,,20.00-50.00,20.00-50.00,260x100x50 mm (WxDxH)
 User Supplied,SD card (UHS-I U3 / V30),1,Full-size SD,,8.00-15.00,,User-supplied; 32-64 GB recommended; pre-format 64 KB clusters

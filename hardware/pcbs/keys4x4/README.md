@@ -1,4 +1,4 @@
-# Key PCB
+# Keys4x4 PCB
 
 **Dimensions:** ~72 x 80 mm | **Layers:** 2 | **Orientation:** Horizontal, mounted through top panel | **Instances:** 1
 

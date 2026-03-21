@@ -104,7 +104,7 @@
 | Input Daughter Board | **2-layer** | Sig / GND_ISO | Simple board: jacks + ESD diodes + connector; inherits isolation from mother board |
 | Output Board | **2-layer** | Sig / GND_ISO | Simple board: jacks + ESD diodes + connector; inherits isolation from mother board |
 | HP Board | **2-layer** | Sig / GND_ISO | Headphone amp breakout + volume pot + TRS jack; entirely on GND_ISO |
-| Key PCB | **2-layer** | Sig / GND | Switches + LEDs only, no high-speed signals |
+| Keys4x4 PCB | **2-layer** | Sig / GND | Switches + LEDs only, no high-speed signals |
 
 ------
 
@@ -112,7 +112,7 @@
 
 ### Galvanic Isolation (Primary)
 
-The primary noise mitigation is **galvanic isolation** between the digital domain (Main Board, IO Board, Key PCB) and the analog domain (Input Mother Boards, Daughter/Output Boards, HP Board). No shared copper between domains — all signals and power cross the boundary through isolators:
+The primary noise mitigation is **galvanic isolation** between the digital domain (Main Board, IO Board, Keys4x4 PCB) and the analog domain (Input Mother Boards, Daughter/Output Boards, HP Board). No shared copper between domains — all signals and power cross the boundary through isolators:
 
 - **Si8662BB-B-IS1** digital isolators (×2) for TDM signals (150 Mbps, 6-channel)
 - **ISO1541DR** isolated I2C (×2) for codec/MCP23008 control
@@ -165,12 +165,11 @@ This eliminates USB ground loops, switching noise, and NeoPixel current spikes f
 
 | Part                          | Quantity | Notes                                        |
 | ----------------------------- | -------- | -------------------------------------------- |
-| Custom display PCB (ESP32-S3-WROOM-1-N16R8 + 4.3" 800×480 LCD) | 1 | Custom PCB with WROOM-1-N16R8 module + bare 40-pin RGB cap-touch LCD panel; 6-pin header to Teensy (UART TX/RX + ESP32_EN + GPIO0 + 5V + GND); runs LVGL display engine; Teensy-reflashable from SD card via esp-serial-flasher; see [Display Rationale](display/rationale.md) |
-| Rotary encoder with push      | 3        | Quadrature, interrupt-capable pins; NavX + NavY + Edit |
+| Custom display PCB (ESP32-S3-WROOM-1-N16R8 + 4.3" 800×480 LCD + 3× encoders) | 1 | Custom PCB with WROOM-1-N16R8 module + bare 40-pin RGB cap-touch LCD panel + 3× rotary encoders (NavX/NavY/Edit); 6-pin header to Teensy (UART TX/RX + ESP32_EN + GPIO0 + 5V + GND); runs LVGL display engine with native encoder support; Teensy-reflashable from SD card via esp-serial-flasher; see [Display Rationale](display/rationale.md) |
 | Custom key PCB                | 1–2     | CHOC hotswap sockets + WS2812B-2020 + MCP23017 + 100nF caps; 4×4 grid |
 | Kailh CHOC hotswap sockets    | 16       | Soldered to custom PCB                        |
 | WS2812B-2020 NeoPixels        | 16       | Daisy-chained, single data pin                |
-| MCP23017 I2C GPIO expander    | 1        | 4×4 key scan matrix on Key PCB; I2C address 0x20 |
+| MCP23017 I2C GPIO expander    | 1        | 4×4 key scan matrix on Keys4x4 PCB; I2C address 0x20 |
 | CHOC v2 key switches          | 16       | User-supplied or included in BOM              |
 
 ### Power & Connectivity
@@ -226,7 +225,7 @@ This eliminates USB ground loops, switching noise, and NeoPixel current spikes f
 | Ferrite beads            | 4-5      | Post-isolation filter on each Mother Board (×2) + USB GND + misc |
 | Resistors (300-500 Ω)    | 1        | NeoPixel data series resistor              |
 | Polyfuse (2.5A/5A)       | 1        | USB-C input protection                     |
-| 1N4148 signal diode (key matrix) | 16 | Anti-ghosting diodes for 4×4 key matrix on Key PCB |
+| 1N4148 signal diode (key matrix) | 16 | Anti-ghosting diodes for 4×4 key matrix on Keys4x4 PCB |
 | Schottky clamp diodes    | 25       | ESD protection on all audio jacks (incl. headphone) |
 | Film caps (3.3nF, 6.8nF) | 48+     | Anti-alias & reconstruction filter caps    |
 | Resistors (1 kΩ, misc)   | 60+     | Filter networks, input dividers            |
@@ -268,7 +267,7 @@ This eliminates USB ground loops, switching noise, and NeoPixel current spikes f
 Left zone (Main Board):
 - Full-size SD card slot (left of display, vertically aligned with bottom edge of screen, slot opens upward)
 - 1× Custom display PCB (ESP32-S3-WROOM-1-N16R8 + 4.3" 800×480 LCD panel; designed to MIXTEE enclosure dimensions)
-- 3× rotary encoders (NavX + NavY + Edit): horizontal row below display
+- 3× rotary encoders (NavX + NavY + Edit): horizontal row below display, mounted on DESPEE display PCB (not wired to Main Board)
 
 Center:
 - 16× CHOC key switches (4×4 grid): top-aligned with display
@@ -295,6 +294,6 @@ Left column (IO Board + HP Board):
 ### User Experience
 
 - **Boot Time:** <3 seconds to ready
-- **UI Responsiveness:** <50 ms encoder/button to visual feedback
+- **UI Responsiveness:** <50 ms encoder/button to visual feedback (encoders are local to DESPEE — sub-frame LVGL latency for navigation; semantic events forwarded to Teensy over UART)
 - **MIDI Latency:** <10 ms CC message to parameter change
 - **Hot-plug:** MIDI controllers safe to connect/disconnect during operation

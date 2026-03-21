@@ -1,4 +1,4 @@
-# Key PCB — Connections
+# Keys4x4 PCB — Connections
 
 ## JST-PH to Main Board (6-pin)
 

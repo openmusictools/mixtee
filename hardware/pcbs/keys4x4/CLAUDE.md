@@ -1,4 +1,4 @@
-# Key PCB — Agent Context Guide
+# Keys4x4 PCB — Agent Context Guide
 
 ## Required Reading
 - `README.md` — board concept, dimensions, components

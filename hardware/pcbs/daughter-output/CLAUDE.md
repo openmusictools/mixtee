@@ -16,7 +16,7 @@
 - `hardware/pcbs/input-mother/ak4619-wiring.md` — codec wiring
 - `hardware/pcbs/io/architecture.md` — IO Board circuits
 - `hardware/pcbs/main/architecture.md` — Main Board power/mux circuits
-- `hardware/pcbs/key/architecture.md` — key matrix design
+- `hardware/pcbs/keys4x4/architecture.md` — key matrix design
 - `docs/hardware.md` — system-level hardware
 - `docs/pin-mapping.md` — Teensy pin assignments
 

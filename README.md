@@ -47,7 +47,7 @@ mixtee/
 │       ├── input-mother/      ← Input Mother Board (4-layer, routed)
 │       ├── daughter-output/   ← Daughter/Output Board (2-layer, routed)
 │       ├── io/                ← IO Board (2-layer, routed)
-│       ├── key/               ← Key PCB (2-layer, routed)
+│       ├── keys4x4/           ← Keys4x4 PCB (2-layer, routed)
 │       └── power/             ← Power Board (off-the-shelf)
 │       Each board has: README.md, connections.md, architecture.md,
 │       CLAUDE.md, and designs/ (KiCad files + gerbers)

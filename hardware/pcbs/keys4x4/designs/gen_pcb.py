@@ -1,8 +1,8 @@
 """
-MIXTEE Key PCB - KiCad PCB Generator
+MIXTEE Keys4x4 PCB - KiCad PCB Generator
 
 Board: 72 x 72 mm, 2-layer
-Instances: 1 (one unique Key PCB in system)
+Instances: 1 (one unique Keys4x4 PCB in system)
 
 Components (68 total):
   - 16x Kailh CHOC hotswap sockets (CPG135001S30) — SW1..SW16
@@ -588,7 +588,7 @@ def generate_pcb():
   )"""
 
     # Silkscreen text
-    board_text = f"""  (gr_text "MIXTEE Key PCB" (at {BOARD_W/2} {BOARD_H - 2.5}) (layer "{F_SILK}") (uuid "{gen_uuid()}")
+    board_text = f"""  (gr_text "MIXTEE Keys4x4 PCB" (at {BOARD_W/2} {BOARD_H - 2.5}) (layer "{F_SILK}") (uuid "{gen_uuid()}")
     (effects (font (size 1.2 1.2) (thickness 0.15)))
   )"""
 

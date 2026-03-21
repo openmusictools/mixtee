@@ -37,7 +37,7 @@ See [`../io/connections.md`](../io/connections.md) for the full 12-pin FFC pinou
 
 ---
 
-## JST-PH to Key PCB (6-pin)
+## JST-PH to Keys4x4 PCB (6-pin)
 
 | Pin | Signal | Teensy Pin | Notes |
 |-----|--------|------------|-------|
@@ -69,8 +69,8 @@ See [`../io/connections.md`](../io/connections.md) for the full 12-pin FFC pinou
 
 | Pin | Signal | Teensy Pin | Notes |
 |-----|--------|------------|-------|
-| 1 | UART TX (Teensy → ESP32-S3) | 1 | Serial1 TX — widget commands, meter data |
-| 2 | UART RX (ESP32-S3 → Teensy) | 0 | Serial1 RX — touch events, READY/ACK |
+| 1 | UART TX (Teensy → ESP32-S3) | 1 | Serial1 TX — widget commands, meter data, focus group config |
+| 2 | UART RX (ESP32-S3 → Teensy) | 0 | Serial1 RX — touch events, UI state events (SELECTION_CHANGED/VALUE_CHANGED/PAGE_CHANGED), READY/ACK |
 | 3 | ESP32_EN | 9 | Active-high enable; pull-up on module. Assert LOW to reset. |
 | 4 | ESP32_GPIO0 | 10 | Boot mode: LOW = UART bootloader, HIGH/float = normal app boot |
 | 5 | 5V | — | Module power (5V_DIG) |
@@ -78,6 +78,8 @@ See [`../io/connections.md`](../io/connections.md) for the full 12-pin FFC pinou
 
 **Connector:** 6-pin JST-PH (B6B-PH-K-S) or pin header to custom ESP32-S3 display PCB.
 **Cable:** ~20mm. Pins 3–4 enable Teensy-controlled ESP32 reflash from SD card — see [SD Update](../../docs/sd-update.md). SPI0 bus no longer needed — display rendering handled entirely by ESP32-S3 custom display PCB running LVGL.
+
+**Note:** Encoders are not routed through this cable. The 3 rotary encoders (NavX, NavY, Edit) mount directly on the DESPEE PCB and are read by the ESP32-S3 via local GPIO. The ESP32 drives LVGL encoder groups natively and forwards semantic events to the Teensy over UART (pin 2).
 
 ---
 

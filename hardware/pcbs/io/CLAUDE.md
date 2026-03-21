@@ -14,7 +14,7 @@
 ## Do NOT Read (irrelevant to this board)
 - `hardware/pcbs/input-mother/architecture.md` — analog stage design
 - `hardware/pcbs/input-mother/ak4619-wiring.md` — codec wiring
-- `hardware/pcbs/key/architecture.md` — key matrix design
+- `hardware/pcbs/keys4x4/architecture.md` — key matrix design
 - `hardware/pcbs/main/architecture.md` — Main Board power/mux circuits
 - `docs/ui-architecture.md` — display/UI hierarchy
 - `docs/usb-audio.md` — USB audio details

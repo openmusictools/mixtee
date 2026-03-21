@@ -8,11 +8,14 @@
 
 ### On-Device Controls
 
-**3× Rotary Encoders with Push:**
+**3× Rotary Encoders with Push (integrated into DESPEE display module):**
 
 - **NavX Encoder (left, below display):** Horizontal navigation — scroll laterally within current depth; push = drill down one level
 - **NavY Encoder (center, below display):** Vertical navigation — scroll between pages/rows; push = context action
 - **Edit Encoder (right, below display):** Adjust value of focused parameter; push = confirm / drill into focused element
+- Encoders mount directly on the DESPEE PCB; ESP32-S3 reads them via GPIO and drives LVGL encoder groups natively
+- ESP32 owns navigation and value editing; sends data updates (SELECTION_CHANGED, VALUE_CHANGED, PAGE_CHANGED) to Teensy over UART — host never sees raw encoder events
+- No encoder wiring to Main Board — all 9 encoder GPIOs are local to DESPEE
 
 **16× Mechanical Key Switches (custom PCB, CHOC hotswap, 4×4 grid):**
 
@@ -28,7 +31,7 @@
 - **Page:** Hold Page + turn Nav encoder to scroll vertically between pages within a view
 - **Shift:** Modifier key (hold + other key for alternate functions)
 - Custom PCB per key group with Kailh CHOC hotswap sockets, WS2812B-2020 NeoPixels (daisy-chained, single data pin), 100nF decoupling cap per LED
-- 16 switches scanned via MCP23017 I2C GPIO expander (4×4 matrix with anti-ghosting diodes, on Key PCB)
+- 16 switches scanned via MCP23017 I2C GPIO expander (4×4 matrix with anti-ghosting diodes, on Keys4x4 PCB)
 
 ### Display
 
@@ -39,7 +42,7 @@
 - ESP32-S3 runs a **device-agnostic LVGL display engine** — no device-specific knowledge; reusable across MIXTEE, SYNTEE, and future devices — see [DESPEE](https://github.com/openaudiotools/despee)
 - Teensy streams binary widget commands over UART at 921600 baud (COBS-encoded frames with CRC16); see [Display Protocol](display/protocol.md)
 - UI layout defined in `ui.json` on SD card — Teensy parses JSON, translates to binary protocol commands, streams to ESP32
-- 6-pin connection: UART TX/RX + ESP32_EN + GPIO0 (bootloader control) + 5V + GND
+- 6-pin connection to Teensy: UART TX/RX + ESP32_EN + GPIO0 (bootloader control) + 5V + GND (encoders are local to DESPEE — not on this cable)
 - Per-channel strip width: 120 px × display height (mono pair occupies 2 strips)
 - Stereo-linked pairs occupy 2 slots but grouped visually
 - 30 Hz meter update rate via METER_BATCH command (~4.6 KB/s); parameter state sent on change

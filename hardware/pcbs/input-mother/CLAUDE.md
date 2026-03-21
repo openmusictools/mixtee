@@ -13,7 +13,7 @@
 
 ## Do NOT Read (irrelevant to this board)
 - `hardware/pcbs/io/architecture.md` — IO Board circuits
-- `hardware/pcbs/key/architecture.md` — Key PCB matrix design
+- `hardware/pcbs/keys4x4/architecture.md` — Keys4x4 PCB matrix design
 - `hardware/pcbs/main/architecture.md` — Main Board power/mux circuits
 - `docs/ui-architecture.md` — display/UI hierarchy
 - `docs/usb-audio.md` — USB audio details
