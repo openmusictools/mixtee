@@ -90,7 +90,7 @@ Primary: **JLCPCB** or **PCBWay** standard capabilities. All design rules chosen
 - **Star topology** for high-current returns: USB host VBUS, NeoPixels, TFT backlight returns converge near power entry point
 - **Component placement** enforces separation: power/USB at one end → Teensy/UI center → isolation boundary at opposite end
 
-### Analog Domain (Input Mother Boards, Daughter/Output, HP Board)
+### Analog Domain (Input Mother Boards, Daughter/Output, PHONEE)
 
 - **Single continuous GND_ISO plane** — entirely isolated from digital GND
 - **Short return paths** for audio signals — keep analog traces close to their ground reference

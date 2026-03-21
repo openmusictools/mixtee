@@ -56,7 +56,7 @@ Dimensions: **260 mm** wide × **84.6 mm** deep (front to back). Outputs moved t
 
 - Custom PCB with CHOC hotswap sockets + WS2812B-2020 per key + MCP23017 I2C GPIO expander + 100nF decoupling caps
 
-### Left column — Connectivity + Monitoring (IO Board + HP Board)
+### Left column — Connectivity + Monitoring (IO Board + PHONEE)
 
 IO Board panel-mount components connected to the main board via 12-pin FFC + 6-pin Ethernet ribbon cable:
 
@@ -64,7 +64,7 @@ IO Board panel-mount components connected to the main board via 12-pin FFC + 6-p
 - ETH RJ45 (Ethernet, with integrated magnetics)
 - MIDI IN + MIDI OUT (3.5mm TRS Type A)
 
-HP Board panel-mount components (standalone PCB, isolated analog domain, powered from Board 1-top via 4-pin JST-PH cable):
+PHONEE module panel-mount components (reusable headphone output PCB, isolated analog domain, powered from Board 1-top via 4-pin JST-PH cable):
 
 - Headphone output 1/4" TRS jack (panel-mount via jack nut)
 - PHONES label + VOL pot (10kΩ log)

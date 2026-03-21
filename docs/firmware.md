@@ -15,7 +15,7 @@
 ## Key Libraries
 
 - **Audio:** PJRC Audio Library (AudioInputTDM, AudioOutputTDM, AudioMixer4)
-- **Encoders:** PJRC Encoder Library (quadrature decoding)
+- **Encoders:** Handled by DESPEE display module (ESP32-S3 reads encoders via GPIO, drives LVGL focus groups natively, forwards semantic events over UART)
 - **Buttons:** PJRC Bounce Library (debouncing)
 - **Display:** Offloaded to [DESPEE](https://github.com/openaudiotools/despee) display module (ESP32-S3 custom PCB) (LVGL display engine); Teensy streams binary widget commands over Serial1 UART (pins 0/1) at 921600 baud; see [Display Protocol](display/protocol.md)
 - **NeoPixels:** Adafruit NeoPixel or FastLED (level-shifted data output)
@@ -88,8 +88,10 @@ Profile with `AudioProcessorUsage` and `AudioProcessorUsageMax` during Phase 1 b
 
 - **Audio callback:** 44.1/48 kHz, real-time priority
 - **Meter analysis:** Every audio block (peak + RMS computed inline in ChannelStrip)
-- **UART meter transmission:** Teensy sends METER_BATCH commands (24 channels × 6 bytes = 144 bytes/frame) to ESP32-S3 at 30 Hz (~4.6 KB/s with COBS framing); parameter state sent on change via SET_VALUE/SET_TEXT commands
-- **Input polling:** Encoders (interrupt-driven), buttons (Bounce debounce), MIDI (event-driven)
+- **UART meter transmission:** Teensy sends METER_BATCH commands (24 channels × 6 bytes = 144 bytes/frame) to ESP32-S3 at 30 Hz (~4.6 KB/s with COBS framing)
+- **Continuous parameter push:** Every parameter change (MIDI CC, state restore, automation) sends SET_VALUE/SET_TEXT/SET_STATE to the corresponding widget immediately, regardless of which page is visible — LVGL widgets on hidden pages update in memory and display correctly on page switch with zero latency. Encoder-originated changes are not echoed back (ESP32 already shows the correct value) unless the Teensy clamps/quantizes the value.
+- **Periodic full sync:** The main loop cycles through all parameter widgets at ~50 ms intervals (~20 widgets/sec), re-sending current values to catch any dropped UART frames. Full UI (~120 widgets) syncs every ~6 seconds at ~240 bytes/s (0.3% of UART capacity).
+- **Input polling:** UI state events from DESPEE (UART, event-driven: SELECTION_CHANGED/VALUE_CHANGED/PAGE_CHANGED), buttons (Bounce debounce via MCP23017 I2C), MIDI (event-driven)
 
 ### Priority Model
 
@@ -154,8 +156,10 @@ After normal boot (or post-update reboot):
 2. ESP32 responds with READY + screen capabilities (width, height, color depth, touch support)
 3. Teensy parses `/SYSTEM/ui.json` from SD card (~5 ms with ArduinoJson streaming parser)
 4. Teensy translates JSON widget definitions to binary CREATE_WIDGET commands → streams to ESP32 (~200 ms)
-5. ESP32 builds LVGL widget tree; all pages created at startup, switched via SET_VISIBLE
-6. Teensy enters normal operation: METER_BATCH at 30 Hz, SET_VALUE/SET_TEXT on parameter change
-7. ESP32 forwards touch events (TOUCH_DOWN/UP/DRAG) back to Teensy as coordinate-based events
+5. Teensy sends focus group definitions (CREATE_FOCUS_GROUP, ADD_TO_GROUP, SET_ENCODER_CONFIG) → configures LVGL encoder groups
+6. ESP32 builds LVGL widget tree; all pages created at startup, switched via SET_VISIBLE
+7. Teensy enters normal operation: METER_BATCH at 30 Hz, SET_VALUE/SET_TEXT on parameter change
+8. ESP32 reads on-board encoders, drives LVGL focus navigation and value editing locally, sends data updates (SELECTION_CHANGED, VALUE_CHANGED, PAGE_CHANGED) to Teensy
+9. ESP32 forwards touch events (TOUCH_DOWN/UP/DRAG) back to Teensy as coordinate-based events
 
 Total boot-to-display time: <500 ms after Teensy boot completes.

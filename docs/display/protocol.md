@@ -89,6 +89,19 @@ All frames use [COBS encoding](https://en.wikipedia.org/wiki/Consistent_Overhead
 | 0x23 | SET_STATE | Teensy → ESP32 | `[id:2][state:1]` | Set widget state (normal/pressed/disabled/checked) |
 | 0x24 | SET_COLOR | Teensy → ESP32 | `[id:2][color_target:1][r:1][g:1][b:1]` | Set widget color |
 
+### Focus Group Commands (0x17–0x1A) — Teensy → ESP32
+
+These commands configure LVGL encoder groups, enabling the ESP32 to handle encoder-driven navigation and value editing natively. Sent after widget creation, before BOOT_COMPLETE.
+
+| CMD | Name | Direction | Data | Description |
+|-----|------|-----------|------|-------------|
+| 0x17 | CREATE_FOCUS_GROUP | Teensy → ESP32 | `[group_id:1][name_len:1][name:variable]` | Create an LVGL encoder input group |
+| 0x18 | ADD_TO_GROUP | Teensy → ESP32 | `[group_id:1][widget_id:2]` | Add widget to a focus group (order determines navigation sequence) |
+| 0x19 | SET_ENCODER_CONFIG | Teensy → ESP32 | `[encoder_index:1][role:1][group_id:1]` | Assign physical encoder to role (0=navigation, 1=editing) and bind to focus group |
+| 0x1A | SET_ACTIVE_GROUP | Teensy → ESP32 | `[encoder_index:1][group_id:1]` | Switch which focus group an encoder drives at runtime |
+
+**encoder_index:** 0=NavX, 1=NavY, 2=Edit. **role:** 0=navigation, 1=editing.
+
 ### Touch Events (0x30–0x32) — ESP32 → Teensy
 
 | CMD | Name | Data | Description |
@@ -98,6 +111,18 @@ All frames use [COBS encoding](https://en.wikipedia.org/wiki/Consistent_Overhead
 | 0x32 | TOUCH_DRAG | `[x:2][y:2]` | Finger moved to coordinates |
 
 Touch events are coordinate-based — the ESP32 never interprets touch semantics. The Teensy maps touch coordinates to widget IDs using the widget layout from `ui.json`.
+
+### UI State Events (0x33–0x35) — ESP32 → Teensy
+
+The ESP32 owns the full UI navigation state — encoders, focus traversal, value editing, and page switching all run locally via LVGL. The ESP32 sends **data updates** to the Teensy: which control changed and to what value. The Teensy never sees raw encoder rotation or push events.
+
+| CMD | Name | Data | Description |
+|-----|------|------|-------------|
+| 0x33 | SELECTION_CHANGED | `[group_id:1][widget_id:2]` | User navigated to a different widget (Teensy updates selected channel/parameter) |
+| 0x34 | VALUE_CHANGED | `[widget_id:2][value:2]` | User changed a control's value via encoder or touch (Teensy applies the new parameter value) |
+| 0x35 | PAGE_CHANGED | `[page_id:2]` | User switched to a different page (Teensy updates current view/page state) |
+
+UI state events are fire-and-forget (no ACK). The Teensy uses these to sync its internal state — applying parameter changes (gain, pan, EQ, etc.), updating the selected channel, and tracking the current page.
 
 ### Update Commands (0x40–0x41)
 
@@ -168,14 +193,16 @@ Each entry in METER_BATCH:
 
 ### Boot Sequence
 
-1. ESP32 boots, initializes LCD + touch controller
+1. ESP32 boots, initializes LCD + touch controller + encoder GPIOs
 2. Shows splash screen (built-in, device-agnostic logo or blank)
 3. Waits for HANDSHAKE from Teensy on UART
 4. Responds with READY + screen capabilities
 5. Receives CREATE_PAGE / CREATE_WIDGET commands → builds LVGL widget tree
-6. Receives BOOT_COMPLETE → enters normal operation mode
-7. Processes runtime commands (METER_BATCH, SET_VALUE, etc.) in main loop
-8. Forwards touch events to Teensy
+6. Receives CREATE_FOCUS_GROUP / ADD_TO_GROUP / SET_ENCODER_CONFIG commands → configures LVGL encoder groups
+7. Receives BOOT_COMPLETE → enters normal operation mode
+8. Processes runtime commands (METER_BATCH, SET_VALUE, etc.) in main loop
+9. Reads encoders, drives LVGL focus navigation and value editing locally, sends data updates (SELECTION_CHANGED, VALUE_CHANGED, PAGE_CHANGED) to Teensy
+10. Forwards touch events to Teensy
 
 ### Widget Table
 
@@ -196,6 +223,54 @@ Each entry in METER_BATCH:
 - Complete frames queued for main loop processing
 - Main loop: dequeue frame → validate CRC → dispatch by CMD → update LVGL objects
 - LVGL `lv_timer_handler()` called at end of each main loop iteration
+
+------
+
+## State Synchronization Model
+
+All LVGL widgets persist in memory across page switches (created at boot, never destroyed). SET_VALUE/SET_TEXT/SET_STATE commands update widget state regardless of visibility. This enables zero-latency page switches — widgets already hold their current values when a page becomes visible.
+
+### Continuous Push (Primary)
+
+The Teensy sends SET_VALUE/SET_TEXT/SET_STATE for **every** parameter change, regardless of which page is currently visible. This covers all Teensy-originated changes: MIDI CC, state restore, automation, preset load, etc.
+
+- No page tracking needed for this mechanism — just "parameter changed → push to display"
+- LVGL widgets on hidden pages update their internal value immediately
+- Page switch shows instantly-correct values
+
+**Encoder-originated changes:** When the user adjusts a value via encoder, the ESP32 updates the widget locally and sends VALUE_CHANGED to the Teensy. The Teensy applies the change to DSP state but does **not** echo SET_VALUE back — the display already shows the correct value. Exception: if the Teensy clamps or quantizes the value (e.g., encoder says 127 but Teensy clamps to 100), Teensy sends SET_VALUE with the corrected value.
+
+### Periodic Full Sync (Insurance)
+
+To guard against dropped frames (CRC failures → silent drops), the Teensy periodically cycles through all parameter widgets and re-sends current values:
+
+- One widget per cycle, ~50 ms interval (~20 widgets/sec)
+- Full MIXTEE UI (~120 widgets) completes a sync cycle every ~6 seconds
+- Interleaved with METER_BATCH traffic — no burst
+- Cost: ~240 bytes/s = 0.3% of UART capacity
+
+```cpp
+// In Teensy main loop
+static uint16_t sync_cursor = 0;
+if (millis() - last_sync > 50) {  // ~20 widgets/sec
+    send_set_value(widget_ids[sync_cursor], current_values[sync_cursor]);
+    sync_cursor = (sync_cursor + 1) % widget_count;
+    last_sync = millis();
+}
+```
+
+### Bandwidth Budget
+
+| Data stream | Rate | Bandwidth | % of 92 KB/s |
+|-------------|------|-----------|--------------|
+| METER_BATCH (24 ch × 30 Hz) | 30 Hz | 4.8 KB/s | 5.2% |
+| Periodic sync (~20 widgets/s) | continuous | 0.24 KB/s | 0.3% |
+| Parameter changes (user/MIDI) | sporadic | <0.1 KB/s typical | <0.1% |
+| **Total** | | **~5.2 KB/s** | **~5.6%** |
+
+### PAGE_CHANGED Handling
+
+PAGE_CHANGED events are still sent by the ESP32 and the Teensy uses them to track the current page for context-sensitive button behavior. No page-specific value refresh burst is needed — values are already current from continuous push + periodic sync.
 
 ------
 

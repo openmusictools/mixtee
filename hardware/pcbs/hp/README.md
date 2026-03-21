@@ -1,19 +1,29 @@
-# HP Board (Headphone Amplifier)
+# PHONEE — Headphone Output Module
 
-**Dimensions:** ~30 × 20 mm (or sized to fit breakout module) | **Layers:** 2 | **Orientation:** Horizontal, under top panel (left zone) | **Instances:** 1
+> **Note:** The canonical PHONEE specification lives in
+> [openaudiotools/phonee](https://github.com/openaudiotools/phonee).
+> This directory contains MIXTEE-specific integration context.
+> Design changes should be made in PHONEE first and synced here.
 
-Standalone headphone amplifier board in the **galvanically isolated analog domain**. Receives Master L/R audio and isolated power from Board 1-top (Input Mother TDM1) via a 4-pin JST-PH cable. Entire board runs on GND_ISO — no connection to system GND.
+**Dimensions:** ~30 × 20 mm | **Layers:** 2 | **Orientation:** Horizontal, under top panel (left zone) | **Instances:** 1
+
+PHONEE is a **reusable headphone output module** — a standalone custom PCB designed for use across multiple audio devices (similar to [DESPEE](https://github.com/openaudiotools/despee) for displays). It carries a TPA6132A2 headphone amp, PCB-mount volume pot, and 1/4" TRS jack on a single board.
+
+In MIXTEE, PHONEE sits in the **galvanically isolated analog domain**. It receives Master L/R audio and isolated power from Board 1-top (Input Mother TDM1) via a 4-pin JST-PH cable. Entire board runs on GND_ISO — no connection to system GND.
 
 ## Key Components
 
-- Off-the-shelf TPA6132 or MAX97220 breakout module (soldered or socketed)
-- 10k log potentiometer (volume control)
+- TPA6132A2 headphone amplifier IC (SOT-23-8, ground-referenced, capless output)
+- 10kΩ log potentiometer — PCB-mount (A10K)
 - 1/4" TRS headphone jack (panel-mount, with detect switch)
-- 4-pin JST-PH connector (signal + power input from Board 1-top)
+- 4-pin JST-PH connector (signal + power input)
 
-## Why Standalone
+## Why a Reusable Module
 
-Moving the headphone amp to its own board keeps it fully in the isolated analog domain without complicating the IO Board with split ground planes. It also allows physical placement flexibility within the enclosure.
+- Keeps headphone output fully in the isolated analog domain without complicating the IO Board with split ground planes
+- Single-board solution (amp + pot + jack) that can be dropped into any audio device needing a headphone output
+- No off-the-shelf module combines all three components — this fills that gap
+- Canonical source: [openaudiotools/phonee](https://github.com/openaudiotools/phonee)
 
 ## See Also
 
@@ -23,4 +33,4 @@ Moving the headphone amp to its own board keeps it fully in the isolated analog 
 
 ## Status
 
-Not started. New board added as part of galvanic isolation architecture.
+Not started. Design phase — will be developed in [openaudiotools/phonee](https://github.com/openaudiotools/phonee).

@@ -2,7 +2,7 @@
 
 **Dimensions:** ~50 x 80 mm | **Layers:** 2 | **Orientation:** Horizontal, under top panel (left side) | **Instances:** 1
 
-Handles Ethernet, USB MIDI host, and MIDI IN/OUT. All panel-mount components in the left column of the top panel. Headphone amp has moved to a standalone HP Board in the isolated analog domain.
+Handles Ethernet, USB MIDI host, and MIDI IN/OUT. All panel-mount components in the left column of the top panel. Headphone amp has moved to a standalone PHONEE module in the isolated analog domain.
 
 ## Key ICs
 

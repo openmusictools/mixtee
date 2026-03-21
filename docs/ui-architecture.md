@@ -26,11 +26,15 @@ No internal FX for now. The mixer does not include built-in effects (reverb, del
 |---------------|-------|-------|
 | UI layout definitions | `ui.json` on SD card | Parsed by Teensy at boot |
 | Widget creation commands | Teensy | Translates JSON → binary CREATE_WIDGET protocol |
+| Focus group definitions | Teensy | Defines encoder groups via CREATE_FOCUS_GROUP / ADD_TO_GROUP at boot |
 | LVGL widget rendering | ESP32-S3 display engine | Generic renderer, no device knowledge |
+| Encoder input + navigation/focus | ESP32-S3 display engine | 3× on-board encoders drive LVGL encoder groups natively; forwards semantic events |
 | Meter data streaming | Teensy | METER_BATCH at 30 Hz (~4.6 KB/s) |
 | Parameter updates | Teensy | SET_VALUE/SET_TEXT/SET_STATE on change |
 | Touch input | ESP32-S3 → Teensy | Coordinate-based events (TOUCH_DOWN/UP/DRAG) |
 | Touch interpretation | Teensy | Maps coordinates to UI elements via widget bindings |
+| UI state sync | Teensy | Processes SELECTION_CHANGED/VALUE_CHANGED/PAGE_CHANGED from ESP32 → updates internal state (DSP params, selected channel, current page) |
+| State replication | Teensy | Continuous push: every parameter change → SET_VALUE to display, regardless of visible page. Periodic sync: cycles all widgets every ~6s as insurance against dropped frames. See [Display Protocol § State Synchronization](display/protocol.md#state-synchronization-model) |
 
 ### ui.json Format
 
@@ -63,6 +67,28 @@ The UI layout is defined in a JSON file on the SD card (`/SYSTEM/ui.json`), load
 - `pages[]` — each page contains widget definitions with absolute positioning
 - `bindings.meters[]` — maps audio channel indices to meter widget IDs (for METER_BATCH routing)
 - `bindings.params[]` — maps Teensy-side parameter names to widget IDs (for SET_VALUE/SET_TEXT routing)
+
+**Focus groups:** `ui.json` also defines encoder focus groups — which widgets belong to each group and in what order. The Teensy sends CREATE_FOCUS_GROUP and ADD_TO_GROUP commands after widget creation, then SET_ENCODER_CONFIG to assign physical encoders to roles. At runtime, SET_ACTIVE_GROUP switches encoder targets as the user navigates between views/pages.
+
+```json
+{
+  "focus_groups": [
+    {
+      "id": 0, "name": "overview_nav",
+      "widgets": [100, 101, 102, 103, 104, 105, 106, 107]
+    },
+    {
+      "id": 1, "name": "overview_edit",
+      "widgets": [110, 111, 112, 113, 114, 115, 116, 117]
+    }
+  ],
+  "encoders": [
+    { "index": 0, "role": "navigation", "default_group": 0 },
+    { "index": 1, "role": "navigation", "default_group": 0 },
+    { "index": 2, "role": "editing", "default_group": 1 }
+  ]
+}
+```
 
 **Size:** ~15–25 KB for full MIXTEE UI. ArduinoJson streaming parser handles this in ~5 ms.
 
@@ -203,6 +229,8 @@ Full-screen settings page showing a parameter/value list:
 ------
 
 ## Navigation Details
+
+Navigation logic runs on the ESP32-S3 via LVGL encoder groups. The Teensy defines focus groups at boot and switches them at runtime via SET_ACTIVE_GROUP commands. The ESP32 handles focus traversal, value editing, and page switching locally, sending data updates (SELECTION_CHANGED, VALUE_CHANGED, PAGE_CHANGED) to the Teensy over UART.
 
 ### View Boundary Crossing
 

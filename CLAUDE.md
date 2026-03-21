@@ -30,7 +30,7 @@ MIXTEE is an open-source 16-input / 8-output digital mixer built around the Teen
 | Input Mother | `hardware/pcbs/input-mother/` | Routed, Gerbers exported |
 | Daughter/Output | `hardware/pcbs/daughter-output/` | Routed, Gerbers exported |
 | Keys4x4 PCB | `hardware/pcbs/keys4x4/` | Routed, Gerbers exported |
-| HP Board | `hardware/pcbs/hp/` | Not started |
+| PHONEE (HP) | `hardware/pcbs/hp/` | Not started (external module: [openaudiotools/phonee](https://github.com/openaudiotools/phonee)) |
 | Power Board | `hardware/pcbs/power/` | Off-the-shelf module |
 
 ## Common Commands (Windows)
@@ -92,11 +92,11 @@ Prefer MCP tools over raw Python/CLI when possible. See `docs/pcbs-workflow.md` 
 
 **Audio path:** 16 analog inputs → 4× AK4619VN codecs (2 per TDM bus) → [galvanic isolation boundary] → Teensy 4.1 DSP → [galvanic isolation boundary] → 8 analog outputs
 
-**Galvanic isolation:** Si8662BB digital isolators (TDM), ISO1541 isolated I2C, MEJ2S0505SC isolated DC-DC. Boundary at FFC cables between Main Board and Input Mother Boards. Digital domain (Main, IO, Keys4x4) and analog domain (Mother Boards, Daughter/Output, HP Board) share no copper.
+**Galvanic isolation:** Si8662BB digital isolators (TDM), ISO1541 isolated I2C, MEJ2S0505SC isolated DC-DC. Boundary at FFC cables between Main Board and Input Mother Boards. Digital domain (Main, IO, Keys4x4) and analog domain (Mother Boards, Daughter/Output, PHONEE) share no copper.
 
 **I2C bus topology:** Teensy Wire (pins 18/19) → TCA9548A mux (0x70, main board) → ISO1541 (per channel) → codec boards; MCP23008 (0x21, Board 1-top) controls TS5A3159 mute + codec PDN + headphone detect; MCP23017 (0x20, Keys4x4 PCB) sits upstream for key scanning.
 
-**Key hardware ICs:** AK4619VN (codec), TCA9548A (I2C mux), Si8662BB-B-IS1 (TDM isolator), ISO1541 (I2C isolator), MEJ2S0505SC (isolated DC-DC), MCP23008 (mute/PDN/HP detect, Board 1-top), MCP23017 (key matrix, Keys4x4 PCB), FE1.1s (USB hub, IO Board), STUSB4500 (USB PD sink), TPS22965 (load switch). **Off-the-shelf modules:** STUSB4500 breakout (power), TPA6132/MAX97220 breakout (headphone amp, on HP Board). **Custom PCBs:** DESPEE display module (ESP32-S3 custom display PCB; WROOM-1-N16R8 + bare 4.3" 800×480 LCD + 3× rotary encoders; 6-pin header: UART + EN + GPIO0 boot control; runs device-agnostic LVGL display engine with native encoder support; encoders read locally by ESP32, not wired to Teensy).
+**Key hardware ICs:** AK4619VN (codec), TCA9548A (I2C mux), Si8662BB-B-IS1 (TDM isolator), ISO1541 (I2C isolator), MEJ2S0505SC (isolated DC-DC), MCP23008 (mute/PDN/HP detect, Board 1-top), MCP23017 (key matrix, Keys4x4 PCB), FE1.1s (USB hub, IO Board), STUSB4500 (USB PD sink), TPS22965 (load switch), TPA6132A2 (headphone amp, on PHONEE module). **Off-the-shelf modules:** STUSB4500 breakout (power). **Reusable custom modules:** DESPEE display module (ESP32-S3 custom display PCB; WROOM-1-N16R8 + bare 4.3" 800×480 LCD + 3× rotary encoders; 6-pin header: UART + EN + GPIO0 boot control; runs device-agnostic LVGL display engine with native encoder support; encoders read locally by ESP32, not wired to Teensy), PHONEE headphone output module (TPA6132A2 amp + PCB-mount 10kΩ log pot + 1/4" TRS jack on single reusable PCB; 4-pin JST-PH input; [openaudiotools/phonee](https://github.com/openaudiotools/phonee)).
 
 **Display engine:** DESPEE display module (WROOM-1-N16R8 + bare 4.3" 800×480 LCD + 3× rotary encoders) is a generic widget renderer — no device-specific knowledge. Teensy loads UI layout from `ui.json` on SD card, streams binary widget commands (COBS-encoded, CRC16) over Serial1 at 921600 baud. Widget types: Container, Label, Meter, Knob, Slider, Bar, Button, Icon, Rect, Page. 3 on-board encoders (NavX, NavY, Edit) drive LVGL focus groups natively; host defines focus groups via protocol at boot. Touch events forwarded as coordinates; ESP32 owns UI navigation/editing and sends data updates (SELECTION_CHANGED, VALUE_CHANGED, PAGE_CHANGED) — host never sees raw encoder events. See `docs/display/protocol.md`.
 

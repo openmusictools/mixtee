@@ -37,4 +37,4 @@ Quick reference for connector part numbers across all boards. For detailed pinou
 | Mother ↔ Daughter (×3) | JST-PH harness | 6 | 15–20mm |
 | 1-top → O-top | JST-PH harness | 10 | ~80mm |
 | Main ↔ Keys4x4 PCB | JST-PH harness | 6 | 30–40mm |
-| 1-top → HP Board | JST-PH harness | 4 | 40–60mm |
+| 1-top → PHONEE | JST-PH harness | 4 | 40–60mm |

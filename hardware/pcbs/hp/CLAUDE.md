@@ -1,4 +1,4 @@
-# HP Board — Agent Context Guide
+# PHONEE (Headphone Output Module) — Agent Context Guide
 
 ## Required Reading
 - `README.md` — board concept, components, isolation context

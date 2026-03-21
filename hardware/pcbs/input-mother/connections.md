@@ -75,7 +75,7 @@ Same pinout for both TDM1 and TDM2 instances, substituting bus signals. 7× GND_
 | 3 | 5V_ISO | Isolated power for HP amp |
 | 4 | GND_ISO | Isolated ground |
 
-**Connector:** 4-pin JST-PH (B4B-PH-K-S), 2.0mm pitch, ~40–60mm cable. Board 1-top only — carries Master L/R audio and isolated power to the standalone HP Board.
+**Connector:** 4-pin JST-PH (B4B-PH-K-S), 2.0mm pitch, ~40–60mm cable. Board 1-top only — carries Master L/R audio and isolated power to the PHONEE headphone output module.
 
 ------
 

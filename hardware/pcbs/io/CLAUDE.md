@@ -3,7 +3,7 @@
 ## Required Reading
 - `README.md` — board concept, dimensions, key ICs, functional zones
 - `connections.md` — connector interfaces (FFC, Ethernet ribbon, panel-mount)
-- `architecture.md` — USB hub, MIDI, Ethernet circuits (HP amp moved to standalone HP Board)
+- `architecture.md` — USB hub, MIDI, Ethernet circuits (HP amp moved to standalone PHONEE module)
 - `docs/system-topology.md` — system overview and board summary
 
 ## On Demand

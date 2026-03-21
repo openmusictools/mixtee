@@ -1,8 +1,8 @@
-# HP Board — Connections
+# PHONEE — Connections
 
 *← Back to [README](README.md)*
 
-This document defines all connector interfaces on the HP Board.
+This document defines all connector interfaces on the PHONEE headphone output module.
 
 ------
 
@@ -36,9 +36,9 @@ This document defines all connector interfaces on the HP Board.
 
 ## Volume Potentiometer
 
-- 10k ohm log taper (A10K)
-- Wired between HP amp output and headphone jack
-- Panel-mount via nut (top panel, left zone, labeled "PHONES" / "VOL")
+- 10kΩ log taper (A10K)
+- PCB-mount, between TPA6132A2 output and headphone jack
+- Protrudes through enclosure panel (in MIXTEE: top panel, left zone, labeled "PHONES" / "VOL")
 
 ------
 
