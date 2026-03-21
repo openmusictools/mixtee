@@ -34,7 +34,7 @@ Note: Ethernet signals are post-PHY analog -- cable-tolerant. Only USB Full-Spee
 | 5 | LED | Activity LED (optional) |
 | 6 | GND | Shield/return |
 
-6-pin 2.54mm pitch header, ~100mm ribbon cable. Signals route through 0.1uF coupling caps on IO Board to RJ45 MagJack transformer.
+6-pin 2.54mm pitch header, ~100mm ribbon cable. Signals route directly to RJ45 MagJack (integrated magnetics provide DC blocking — no external coupling caps needed).
 
 ## Panel-Mount Connectors
 
@@ -45,7 +45,7 @@ Note: Ethernet signals are post-PHY analog -- cable-tolerant. Only USB Full-Spee
 | MIDI IN | 3.5mm TRS Type A (CUI SJ-3523-SMT) | Optocoupler-isolated input |
 | MIDI OUT | 3.5mm TRS Type A (CUI SJ-3523-SMT) | Current-loop output |
 
-Headphone amp, jack, and volume pot have moved to the standalone **HP Board** — see [`../hp/connections.md`](../hp/connections.md).
+Headphone amp, jack, and volume pot have moved to the standalone **PHONEE** module — see [`../hp/connections.md`](../hp/connections.md).
 
 All panel-mount components in left column of top panel.
 

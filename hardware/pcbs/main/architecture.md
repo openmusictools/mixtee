@@ -33,17 +33,6 @@
 - Bulk capacitor (1000–2200 uF) near NeoPixel power entry
 - 10 mohm shunt resistor test point for current measurement
 
-### ADP7118 LDO (Main Board instance)
-
-- 5V → 3.3V_A for virtual ground buffer (digital domain only)
-- HP amp is now powered from the isolated analog domain (Board 1-top → HP Board via 4-pin cable)
-
-### 2.5V Virtual Ground
-
-- Precision resistor divider (2x 10k ohm 0.1%) buffered by one OPA1678 section
-- Provides stable mid-rail reference for AC-coupled signal paths
-- OPA1678 rail-to-rail output gives ~3.5Vpp usable swing
-
 ---
 
 ## TCA9548A I2C Mux
@@ -60,7 +49,7 @@
 
 ## Galvanic Isolation (Digital ↔ Analog Domain Boundary)
 
-The FFC cables to the Input Mother Boards are the **galvanic isolation boundary**. No shared copper exists between the digital domain (Main Board) and the analog domain (Mother Boards, Daughter/Output Boards, HP Board). All isolation components sit on the Main Board side, near each FFC connector.
+The FFC cables to the Input Mother Boards are the **galvanic isolation boundary**. No shared copper exists between the digital domain (Main Board) and the analog domain (Mother Boards, Daughter/Output Boards, PHONEE). All isolation components sit on the Main Board side, near each FFC connector.
 
 ### Per-FFC Isolation Set (×2 — one per TDM bus)
 

@@ -32,16 +32,16 @@
 ## Ethernet Section
 
 - RJ45 MagJack with integrated magnetics + optional activity LEDs
-- 0.1uF coupling caps between Teensy PHY signals and MagJack transformer
 - Signals arrive via 6-pin ribbon cable (NOT the FFC)
 - Post-PHY analog signals -- no impedance-controlled routing required
+- No external coupling caps needed — MagJack integrated magnetics provide DC blocking
 - Native Teensy 4.1 Ethernet (DP83825I PHY on board), 10/100 Mbps
 
 ## Design Notes
 
 - 2-layer PCB sufficient — only USB Full-Speed (12 Mbps) and post-PHY Ethernet analog
 - No high-speed digital traces on this board
-- Headphone amp has been moved to a standalone **HP Board** in the isolated analog domain — see [`../hp/README.md`](../hp/README.md)
+- Headphone amp has been moved to a standalone **PHONEE** module in the isolated analog domain — see [`../hp/README.md`](../hp/README.md)
 - Functional zones: USB section (top), MIDI section (center), FFC/header (interior edge)
 
 ---

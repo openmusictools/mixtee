@@ -2,7 +2,7 @@
 
 **Dimensions:** ~260 x 85 mm | **Layers:** 4 | **Orientation:** Horizontal, under top panel | **Instances:** 1
 
-Central hub connecting all other boards. Houses the Teensy 4.1, galvanic isolation boundary, power management, I2C mux, and display interface. Panel-mount components (encoders, SD card) protrude through top panel cutouts.
+Central hub connecting all other boards. Houses the Teensy 4.1, galvanic isolation boundary, power management, I2C mux, and display interface. Panel-mount components (SD card) protrude through top panel cutouts. Encoders are on the DESPEE display PCB (not on this board).
 
 ## Key ICs
 
@@ -13,8 +13,6 @@ Central hub connecting all other boards. Houses the Teensy 4.1, galvanic isolati
 - 2× Murata MEJ2S0505SC — isolated DC-DC 5V→5V_ISO (2W, 5.2 kV)
 - 74LVC1G00 NAND soft-latch power circuit
 - TPS22965 load switch (5A, soft-start)
-- ADP7118 LDO (virtual ground buffer)
-- OPA1678 (2.5V virtual ground buffer)
 
 ## See Also
 

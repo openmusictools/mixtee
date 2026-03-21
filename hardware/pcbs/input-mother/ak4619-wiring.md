@@ -295,7 +295,7 @@ PWR USB-C (5V, Power Board) → cable → TPS22965 → Main Board 5V rail
 
 Each Input Mother Board has its own ADP7118 LDO, converting the galvanically isolated 5V_ISO supply to a clean 3.3V_A rail for its two codecs. A ferrite bead + ceramic cap post-filter between the FFC and ADP7118 input attenuates DC-DC switching ripple. Combined with ADP7118 PSRR (>60 dB), total rejection at the DC-DC switching frequency exceeds 100 dB.
 
-A third ADP7118 on the Main Board provides 3.3V_A for the virtual ground buffer (digital domain). The HP amp receives 5V_ISO and Master L/R audio from Board 1-top via a dedicated 4-pin JST-PH cable.
+The HP amp receives 5V_ISO and Master L/R audio from Board 1-top via a dedicated 4-pin JST-PH cable.
 
 VSS1 and VSS2 connect to a common GND_ISO plane on each Mother Board — galvanically isolated from the digital domain's GND.
 

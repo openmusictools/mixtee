@@ -43,7 +43,7 @@ This document covers the detailed analog circuit design, power regulation, I2C a
 | Package | SOIC-8 / TSSOP-8 | DIP-8 / SOIC-8 |
 | Cost | $1.20 | $0.80 |
 
-Op-amps run single-supply on 5V with 2.5V virtual ground biasing (generated on Main Board). OPA1678 rail-to-rail output gives ~3.5Vpp usable swing — sufficient for +4 dBu.
+Op-amps run single-supply on 5V with 2.5V virtual ground biasing (generated locally on each board — see below). OPA1678 rail-to-rail output gives ~3.5Vpp usable swing — sufficient for +4 dBu.
 
 ------
 
@@ -59,7 +59,7 @@ Op-amps run single-supply on 5V with 2.5V virtual ground biasing (generated on M
 | GP3 | TS5A3159 IN — mute AUX3 L/R |
 | GP4 | Codec U1 PDN control (optional) |
 | GP5 | Codec U2 PDN control (optional) |
-| GP6 | Headphone detect input (from HP Board jack detect switch) |
+| GP6 | Headphone detect input (from PHONEE module jack detect switch) |
 | GP7 | Spare |
 
 - MCP23008 address 0x21 (A0=1, A1=A2=0) — distinct from MCP23017 (0x20) and codecs (0x10/0x11)
@@ -69,13 +69,13 @@ Op-amps run single-supply on 5V with 2.5V virtual ground biasing (generated on M
 
 ### Headphone Detect via MCP23008
 
-The HP Board's TRS jack detect switch connects to MCP23008 GP6 on Board 1-top. Teensy reads this via I2C polling (~100 Hz) instead of a dedicated GPIO pin. Teensy pin 39 is freed.
+The PHONEE module's TRS jack detect switch connects to MCP23008 GP6 on Board 1-top. Teensy reads this via I2C polling (~100 Hz) instead of a dedicated GPIO pin. Teensy pin 39 is freed.
 
 ------
 
 ## Headphone Amp Cable Connector (Board 1-top only)
 
-4-pin JST-PH connector providing Master L/R audio and isolated power to the standalone HP Board. Signals are post-TS5A3159 mute, post-line driver. See [connections.md](connections.md#headphone-amp-cable-4-pin-jst-ph-board-1-top-only) for pinout.
+4-pin JST-PH connector providing Master L/R audio and isolated power to the PHONEE headphone output module. Signals are post-TS5A3159 mute, post-line driver. See [connections.md](connections.md#headphone-amp-cable-4-pin-jst-ph-board-1-top-only) for pinout.
 
 ------
 
@@ -102,6 +102,17 @@ The ferrite bead + ceramic cap attenuates DC-DC switching ripple. ADP7118 PSRR (
 
 ------
 
+## 2.5V Virtual Ground
+
+Each Input Mother Board generates its own 2.5V mid-rail reference locally (cannot cross the galvanic isolation boundary from the Main Board).
+
+- Precision resistor divider (2× 10k ohm 0.1%) from 5V_ISO, buffered by one OPA1678 section
+- Provides stable mid-rail reference for all AC-coupled signal paths on the board
+- OPA1678 rail-to-rail output gives ~3.5Vpp usable swing
+- Both board variants (1-top and 2-top) populate this circuit
+
+------
+
 ## I2C Address Selection
 
 - Solder jumpers select TCA9548A mux channel (Ch 0 = Board 1-top, Ch 1 = Board 2-top)
@@ -112,5 +123,5 @@ The ferrite bead + ceramic cap attenuates DC-DC switching ripple. ADP7118 PSRR (
 
 ## BOM Variant
 
-- **Board 1-top:** fully populated (8× input buffers, 8× anti-alias filters, 4× output reconstruction filters, 4× line drivers, 4× TS5A3159 mute, MCP23008, HP amp cable connector)
-- **Board 2-top:** output section + mute/control section left unpopulated (DAC sections unused, TS5A3159 and MCP23008 footprints present but not populated; codec PDN tied to TVDD via 10k)
+- **Board 1-top:** fully populated (8× input buffers, 8× anti-alias filters, 4× output reconstruction filters, 4× line drivers, 2.5V VG buffer, 4× TS5A3159 mute, MCP23008, HP amp cable connector) — 17 OPA1678 ICs
+- **Board 2-top:** output section + mute/control section left unpopulated (DAC sections unused, TS5A3159 and MCP23008 footprints present but not populated; codec PDN tied to TVDD via 10k); 2.5V VG buffer populated — 9 OPA1678 ICs

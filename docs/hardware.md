@@ -75,11 +75,11 @@
 
 ### Power Distribution
 
-5V rail is split into 5V_DIG (noisy digital loads: USB, NeoPixels, TFT) and 5V_ISO (galvanically isolated analog domain via MEJ2S0505SC DC-DC converters). TPS22965 load switch provides soft-start. ADP7118 LDOs (3 instances — 2 on Input Mother Boards, 1 on Main Board) generate clean 3.3V_A rails. See [Main Board architecture](../hardware/pcbs/main/architecture.md) for detailed power distribution and galvanic isolation design.
+5V rail is split into 5V_DIG (noisy digital loads: USB, NeoPixels, TFT) and 5V_ISO (galvanically isolated analog domain via MEJ2S0505SC DC-DC converters). TPS22965 load switch provides soft-start. ADP7118 LDOs (2 instances — 1 per Input Mother Board) generate clean 3.3V_A rails. See [Main Board architecture](../hardware/pcbs/main/architecture.md) for detailed power distribution and galvanic isolation design.
 
 *USB host hub details: see [IO Board architecture](../hardware/pcbs/io/architecture.md).*
 
-*Headphone amplifier details: see [HP Board architecture](../hardware/pcbs/hp/architecture.md).*
+*Headphone amplifier details: see [PHONEE architecture](../hardware/pcbs/hp/architecture.md).*
 
 *Ethernet details: see [IO Board architecture](../hardware/pcbs/io/architecture.md).*
 
@@ -103,7 +103,7 @@
 | Input Mother Board | **4-layer** | Sig / GND_ISO / PWR_ISO / Sig | AK4619VN codecs + analog input stages + TDM signals; entirely on GND_ISO (isolated domain) |
 | Input Daughter Board | **2-layer** | Sig / GND_ISO | Simple board: jacks + ESD diodes + connector; inherits isolation from mother board |
 | Output Board | **2-layer** | Sig / GND_ISO | Simple board: jacks + ESD diodes + connector; inherits isolation from mother board |
-| HP Board | **2-layer** | Sig / GND_ISO | Headphone amp breakout + volume pot + TRS jack; entirely on GND_ISO |
+| PHONEE | **2-layer** | Sig / GND_ISO | TPA6132A2 headphone amp + PCB-mount volume pot + TRS jack; entirely on GND_ISO; reusable external module ([openaudiotools/phonee](https://github.com/openaudiotools/phonee)) |
 | Keys4x4 PCB | **2-layer** | Sig / GND | Switches + LEDs only, no high-speed signals |
 
 ------
@@ -112,7 +112,7 @@
 
 ### Galvanic Isolation (Primary)
 
-The primary noise mitigation is **galvanic isolation** between the digital domain (Main Board, IO Board, Keys4x4 PCB) and the analog domain (Input Mother Boards, Daughter/Output Boards, HP Board). No shared copper between domains — all signals and power cross the boundary through isolators:
+The primary noise mitigation is **galvanic isolation** between the digital domain (Main Board, IO Board, Keys4x4 PCB) and the analog domain (Input Mother Boards, Daughter/Output Boards, PHONEE). No shared copper between domains — all signals and power cross the boundary through isolators:
 
 - **Si8662BB-B-IS1** digital isolators (×2) for TDM signals (150 Mbps, 6-channel)
 - **ISO1541DR** isolated I2C (×2) for codec/MCP23008 control
@@ -131,7 +131,7 @@ This eliminates USB ground loops, switching noise, and NeoPixel current spikes f
 ### Grounding
 
 - **Digital domain (Main Board):** Single continuous GND plane with star topology for high-current returns (USB, NeoPixels, TFT backlight)
-- **Analog domain (Mother Boards, HP Board):** Continuous GND_ISO plane, entirely isolated from digital GND
+- **Analog domain (Mother Boards, PHONEE):** Continuous GND_ISO plane, entirely isolated from digital GND
 - **Main Board isolation boundary:** GND_ISO exists only as small copper islands around isolator Side 2 pins and FFC pads. **≥1 mm clearance** between GND and GND_ISO copper on all layers
 - **No ground connection** between domains — isolation integrity must be maintained through layout
 
@@ -151,84 +151,9 @@ This eliminates USB ground loops, switching noise, and NeoPixel current spikes f
 
 ------
 
-## Bill of Materials (Key Components)
+## Bill of Materials
 
-### Core Processing
-
-| Part                  | Quantity | Notes                                          |
-| --------------------- | -------- | ---------------------------------------------- |
-| Teensy 4.1            | 1        | ARM Cortex-M7, USB host, TDM audio, SD slot    |
-| AK4619VN              | 4        | 4-in/4-out codec; U1-U2 full, U3-U4 ADC only  |
-| PSRAM (8 MB, QSPI)   | 1        | IPS6404LSQ or APS6404L; solder to Teensy bottom pads |
-
-### UI Components
-
-| Part                          | Quantity | Notes                                        |
-| ----------------------------- | -------- | -------------------------------------------- |
-| Custom display PCB (ESP32-S3-WROOM-1-N16R8 + 4.3" 800×480 LCD + 3× encoders) | 1 | Custom PCB with WROOM-1-N16R8 module + bare 40-pin RGB cap-touch LCD panel + 3× rotary encoders (NavX/NavY/Edit); 6-pin header to Teensy (UART TX/RX + ESP32_EN + GPIO0 + 5V + GND); runs LVGL display engine with native encoder support; Teensy-reflashable from SD card via esp-serial-flasher; see [Display Rationale](display/rationale.md) |
-| Custom key PCB                | 1–2     | CHOC hotswap sockets + WS2812B-2020 + MCP23017 + 100nF caps; 4×4 grid |
-| Kailh CHOC hotswap sockets    | 16       | Soldered to custom PCB                        |
-| WS2812B-2020 NeoPixels        | 16       | Daisy-chained, single data pin                |
-| MCP23017 I2C GPIO expander    | 1        | 4×4 key scan matrix on Keys4x4 PCB; I2C address 0x20 |
-| CHOC v2 key switches          | 16       | User-supplied or included in BOM              |
-
-### Power & Connectivity
-
-| Part                            | Quantity | Notes                             |
-| ------------------------------- | -------- | --------------------------------- |
-| TCA9548A I2C mux                | 1        | I2C bus switch on main board; isolates codec boards; address 0x70 |
-| STUSB4500 breakout module       | 1        | Off-the-shelf (SparkFun PD Board or equiv.); PWR USB-C input; back panel |
-| FE1.1s USB 2.0 hub IC           | 1        | On IO Board; upstream via FFC, 2 downstream to USB-A |
-| 12 MHz crystal                  | 1        | FE1.1s clock source on IO Board, 15 pF load caps |
-| 6N138 optocoupler               | 1        | MIDI IN galvanic isolation on IO Board, 31.25 kbaud |
-| 1N4148 signal diode             | 1        | MIDI IN optocoupler LED protection on IO Board    |
-| TPS2051 power switch             | 2        | USB host port current limiting on IO Board |
-| USB-A dual stacked socket       | 1        | 2× host ports for MIDI controllers on IO Board |
-| 3.5mm TRS jack (MIDI OUT)       | 1        | MIDI OUT Type A on IO Board; top panel |
-| Resistor 33 ohm (MIDI OUT)      | 1        | MIDI OUT series resistor on IO Board |
-| Resistor 10 ohm (MIDI OUT)      | 1        | MIDI OUT source resistor on IO Board |
-
-### Audio I/O & Analog
-
-| Part                          | Quantity | Notes                                          |
-| ----------------------------- | -------- | ---------------------------------------------- |
-| 1/4" TS panel jacks           | 24       | 16 inputs + 8 outputs                          |
-| 1/4" TRS panel jack           | 1        | Headphone output (stereo) on HP Board, top panel |
-| Potentiometer (10 kΩ log)     | 1        | Headphone volume on HP Board, dedicated analog pot, top panel |
-| OPA1678 (dual op-amp, SOIC-8) | 16       | Input buffers (8), anti-alias (8), output (4), reconstruction (4) — estimate, refine in schematic |
-| NJM4580 (alternate)           | 16       | Budget-friendly alternate to OPA1678            |
-| TS5A3159 analog switch (SOT-23-5) | 4    | Pop suppression — 1 per output stereo pair (Main, AUX1-3); on Board 1-top (isolated analog domain), controlled via MCP23008 |
-| MCP23008 I2C GPIO expander    | 1        | Board 1-top; controls TS5A3159 mute, codec PDN, headphone detect; address 0x21 |
-| HP amp breakout module (TPA6132/MAX97220) | 1 | Off-the-shelf; ground-referenced stereo HP driver, 25mW/32Ω; on standalone HP Board (isolated analog domain) |
-| RJ45 MagJack (integrated magnetics) | 1 | IO Board; Ethernet connector with integrated transformer + LEDs; top panel |
-| 0.1µF cap (Ethernet coupling) | 1 | IO Board; AC coupling between Teensy PHY and MagJack |
-| 6-pin header (Ethernet ribbon) | 2 | Main Board + IO Board; carries ETH TX/RX differential pairs |
-| 6-pin ribbon cable (Ethernet) | 1 | ~100mm; Main Board to IO Board Ethernet connection |
-
-### Power Regulation
-
-| Part                           | Quantity | Notes                                    |
-| ------------------------------ | -------- | ---------------------------------------- |
-| Murata MEJ2S0505SC (isolated DC-DC) | 2  | 5V→5V_ISO isolated DC-DC; 2W (400 mA), 5.2 kV isolation, SIP-7 TH; 1 per FFC on Main Board |
-| Si8662BB-B-IS1 (6-ch digital isolator) | 2 | 150 Mbps, 4 fwd + 2 rev; TDM signal isolation; SOIC-16W; 1 per FFC on Main Board |
-| ISO1541DR (isolated I2C)       | 2        | Bidirectional I2C isolator, 1 MHz, SOIC-8; 1 per FFC on Main Board |
-| ADP7118 LDO                    | 3        | 5V_ISO → 3.3V_A ultra-low-noise analog rail; 1 per Input Mother Board (2) + 1 on Main Board (virtual ground buffer) |
-| TPS22965 load switch             | 1       | Soft-start / inrush limiting, 5A continuous |
-| 10 mΩ shunt resistor           | 1        | Current measurement test point           |
-
-### Passives & Protection
-
-| Part                     | Quantity | Notes                                      |
-| ------------------------ | -------- | ------------------------------------------ |
-| 1000-2200 µF electrolytic | 2+       | NeoPixel bulk, power entry                 |
-| 0.1 µF ceramic caps      | 60+      | Local decoupling everywhere (incl. op-amps)|
-| Ferrite beads            | 4-5      | Post-isolation filter on each Mother Board (×2) + USB GND + misc |
-| Resistors (300-500 Ω)    | 1        | NeoPixel data series resistor              |
-| Polyfuse (2.5A/5A)       | 1        | USB-C input protection                     |
-| 1N4148 signal diode (key matrix) | 16 | Anti-ghosting diodes for 4×4 key matrix on Keys4x4 PCB |
-| Schottky clamp diodes    | 25       | ESD protection on all audio jacks (incl. headphone) |
-| Film caps (3.3nF, 6.8nF) | 48+     | Anti-alias & reconstruction filter caps    |
-| Resistors (1 kΩ, misc)   | 60+     | Filter networks, input dividers            |
+The canonical BOM is [`hardware/bom.csv`](../hardware/bom.csv). Per-board component details are in each board's `architecture.md`.
 
 ------
 
@@ -272,12 +197,12 @@ Left zone (Main Board):
 Center:
 - 16× CHOC key switches (4×4 grid): top-aligned with display
 
-Left column (IO Board + HP Board):
+Left column (IO Board + PHONEE):
 - MIDI HOST dual USB-A (stacked)
 - ETH RJ45 (Ethernet)
 - MIDI IN + MIDI OUT (3.5mm TRS Type A)
-- Headphone output (from standalone HP Board, isolated analog domain)
-- PHONES label + VOL pot
+- Headphone output (from PHONEE module, isolated analog domain)
+- PHONES label + VOL pot (PCB-mount on PHONEE)
 
 **Back panel (260 × 50 mm — all audio I/O + USB-C + power):**
 

@@ -19,7 +19,7 @@ graph TB
         subgraph MAIN["Main Board - 4-layer"]
             direction TB
             TPS22965["TPS22965\nLoad Switch"]
-            MAIN_IO["ADP7118 3.3V LDO\nSD Card SDIO\n74LVC1G00 Soft-Latch\nPC USB-C"]
+            MAIN_IO["SD Card SDIO\n74LVC1G00 Soft-Latch\nPC USB-C"]
             TEENSY["Teensy 4.1\nCortex-M7 600 MHz\nSAI1 + SAI2 TDM\nI2C - SPI0 - SDIO"]
             TCA["TCA9548A\nI2C Mux 0x70"]
 
@@ -73,7 +73,7 @@ graph TB
             D_OUT["O-top + O-bot\nOutput Boards\n8x TS output jacks\nESD protection"]
         end
 
-        HP_BOARD["HP Board - 2-layer\nTPA6132/MAX97220 Amp\nVolume Pot - 1/4in TRS"]
+        HP_BOARD["PHONEE - 2-layer\nTPA6132A2 Amp\nPCB-mount Pot - 1/4in TRS"]
     end
 
     %% Power distribution
@@ -178,7 +178,7 @@ graph TB
 
 **Audio output:** Teensy SAI TX > FFC 20-pin > Si8662BB isolator > AK4619VN DAC > reconstruction filter + output op-amp > TS5A3159 mute switch > 10-pin JST-PH cable > 1/4" TS jack (output board)
 
-**Headphone:** DAC output (Board 1-top) > TS5A3159 > 4-pin JST-PH > TPA6132/MAX97220 amp > volume pot > 1/4" TRS jack. Detect switch returns to MCP23008 GP6 via same cable.
+**Headphone:** DAC output (Board 1-top) > TS5A3159 > 4-pin JST-PH > PHONEE module (TPA6132A2 amp > PCB-mount volume pot > 1/4" TRS jack). Detect switch returns to MCP23008 GP6 via same cable.
 
 **DAW audio:** Ethernet (AES67) > RJ45 MagJack (IO Board) > 6-pin ribbon > Teensy DP83825I PHY > QNEthernet stack > RTP encode/decode. 16-in / 8-out to DAW via virtual soundcard. See [network-connectivity.md](network-connectivity.md) §9.
 
